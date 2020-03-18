@@ -4,12 +4,8 @@ title: About
 permalink: /about/
 ---
 
-Some information about you!
-
-### More Information
-
-A place to include any other types of information that you'd like to include about yourself.
+Hello there! My name is William van Doorn. I am a PhD-candidate in the department of Clinical Chemistry at the Maastricht University Medical Centre+ (Maastricht, The Netherlands). I am passionate about clinical and laboratory research, but also highly interested in fundamental and translational machine learning. Here, I will write about recent (scientific) developments in the fields of clinical chemistry, machine learning and/or the combination of both.
 
 ### Contact me
 
-[email@domain.com](mailto:email@domain.com)
+[hi@wptmdoorn.name](mailto:hi@wptmdoorn.name)
