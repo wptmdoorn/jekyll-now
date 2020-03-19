@@ -37,8 +37,17 @@ A frequently used approach to compare two methods is by producing a scatter plot
 the relationship between the first and second method. Although linear regression is still often used, it has serious drawbacks which
 limits the use in method comparison. Deming [5, 6] and Passing-Bablok [7] regression are statistical techniques that also allow, in contrast to
 linear regression, random measurement errors in the X-axis values. In the case of Deming regression, the assumption is made that these errors
-are normally distributed, and in case of Passing-Bablok, no assumptions are made. In the example provided below we generated a random set of measurements
-for method 1 and method 2 and analyzed them using Deming (left; blue) and Passing-Bablok (right; red) techniques.
+are normally distributed, and in case of Passing-Bablok, no assumptions are made. Using the methcomp software package, we can easily create these
+plots (i.e. Deming example below).
+
+{% highlight python %}
+method1 = [x * uniform(1, 1.5) for x in range(2, 50)] # Generate 50 random measurements for method 1 with some noise
+method2 = [x * uniform(1, 1.5) for x in range(2, 50)] # Generate 50 random measurements for method 2 with some noise
+deming(method1, method2, CI=0.95) # Generate plot
+plt.show() # Show plot on screen
+{% endhighlight %}
+
+This code will result in the following graphical visualizations; shown for Deming (left) and Passing-Bablok (right).
 
 <p>
 <img src="/assets/02methcomp/deming.png" alt="drawing" width="49%"/> 
@@ -50,7 +59,16 @@ generated dataset of measurements for method 1 and method 2. Shaded areas presen
 # Difference plots: Bland-Altman
 A second approach to method comparison is to provide information about the actual "difference" between two methods, often carried out with "Bland-Altman" plots [8, 9]. 
 Bland-Altman plots depict the differences (or alternatively the ratios) between the two techniques which are plotted against the averages of the two techniques. 
-Horizontal lines are drawn at the mean difference and at the limits of agreement, which are defined as the mean difference +/- 1.96 times the standard deviation of the differences (although this can be altered in specific context). Bland-Altman plots especially excel in detecting bias in and are therefore often used complementary to regression analysis. 
+Horizontal lines are drawn at the mean difference and at the limits of agreement, which are defined as the mean difference +/- 1.96 times the standard deviation of the differences (although this can be altered in specific context). Bland-Altman plots especially excel in detecting bias in and are therefore often used complementary to regression analysis. Once again, generating a Bland-Altman plot is very straightforward using the methcomp package:
+
+{% highlight python %}
+method1 = [x * uniform(1, 1.5) for x in range(2, 50)] # Generate 50 random measurements for method 1 with some noise
+method2 = [x * uniform(1, 1.5) for x in range(2, 50)] # Generate 50 random measurements for method 2 with some noise
+blandaltman(method1, method2, difference='absolute', CI=0.95) # Generate Bland-Altman plot
+plt.show() # Show plot on screen
+{% endhighlight %}
+
+Provided below are examples of Bland-Altman plots with absolute (left) and relative (right).
 
 <p>
 <img src="/assets/02methcomp/blandaltman_abs.png" alt="drawing" width="49%"/> 
@@ -60,13 +78,20 @@ differences (right) on a random generated dataset of measurements for method 1 a
 agreement lines.</span>
 </p>
 
-
 # Glucose sensor error grids
 The third current available feature of methcomp is designed for method comparison in a specific field, namely glucose sensor measurement comparisons. Glucose sensor error grids, defined by Clarke (1987) [9] and Parkes (2000) [10, 11], are specifically designed as a method comparison tool for reference
 and new blood glucose measurement systems. These graphical plots are simple scatter plots complemented with a Cartesian grid which labels each of the points to a specific zone. Each of these zones has a different clinical interpretation and consequence, allowing us to do a clinical evaluation of the new versus the old
 method. For instance, values that are in zones C to E can potentially lead to dangerous situations causing harm for the individual wearing the glucose sensor. 
-In the example provided below we generated a random set of measurements for a new and old glucose measurement system and analysed them using the Clarke (left) and
-Parkes (right) error grids.
+For example, to construct a Clarke error grid using the methcomp package we use the following code: 
+
+{% highlight python %}
+sensor1 = [x * uniform(1, 1.5) for x in range(2, 50)] # Generate 50 random glucose measurements for sensor 1 
+sensor2 = [x * uniform(1, 1.5) for x in range(2, 50)] # Generate 50 random glucose measurements for sensor 2
+clarke(sensor1, sensor2, units='mmol') # Generate Clarke plot
+plt.show() # Show plot on screen
+{% endhighlight %}
+
+This will result in the plot we observe left in the example below. Also shown is a Parkes error grid plot for the same set of measurements. 
 
 <p>
 <img src="/assets/02methcomp/clarke.png" alt="drawing" width="49%"/> 
