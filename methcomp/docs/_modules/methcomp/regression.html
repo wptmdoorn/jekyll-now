@@ -1,0 +1,598 @@
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title>methcomp.regression &#8212; methcomp 1.0.0 documentation</title>
+    <link rel="stylesheet" href="../../_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../',
+        VERSION:     '1.0.0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true,
+        SOURCELINK_SUFFIX: '.txt'
+      };
+    </script>
+    <script type="text/javascript" src="../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../_static/doctools.js"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" />
+   
+  <link rel="stylesheet" href="../../_static/custom.css" type="text/css" />
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head>
+  <body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <h1>Source code for methcomp.regression</h1><div class="highlight"><pre>
+<span></span><span class="kn">import</span> <span class="nn">matplotlib.pyplot</span> <span class="k">as</span> <span class="nn">plt</span>
+<span class="kn">import</span> <span class="nn">pandas</span> <span class="k">as</span> <span class="nn">pd</span>
+<span class="kn">import</span> <span class="nn">scipy.stats</span> <span class="k">as</span> <span class="nn">st</span>
+<span class="kn">import</span> <span class="nn">statsmodels.api</span> <span class="k">as</span> <span class="nn">sm</span>
+<span class="kn">import</span> <span class="nn">math</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+
+<span class="n">__all__</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;deming&quot;</span><span class="p">,</span> <span class="s2">&quot;passingbablok&quot;</span><span class="p">,</span> <span class="s2">&quot;linear&quot;</span><span class="p">]</span>
+
+
+<span class="k">class</span> <span class="nc">_Deming</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Internal class for drawing a Deming regression plot&quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">method1</span><span class="p">,</span> <span class="n">method2</span><span class="p">,</span>
+                 <span class="n">vr</span><span class="p">,</span> <span class="n">sdr</span><span class="p">,</span> <span class="n">bootstrap</span><span class="p">,</span>
+                 <span class="n">x_label</span><span class="p">,</span> <span class="n">y_label</span><span class="p">,</span> <span class="n">title</span><span class="p">,</span>
+                 <span class="n">CI</span><span class="p">,</span> <span class="n">line_reference</span><span class="p">,</span> <span class="n">line_CI</span><span class="p">,</span> <span class="n">legend</span><span class="p">,</span>
+                 <span class="n">color_points</span><span class="p">,</span> <span class="n">color_deming</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">method1</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">method1</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">method2</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">method2</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">vr</span> <span class="o">=</span> <span class="n">vr</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">sdr</span> <span class="o">=</span> <span class="n">sdr</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">bootstrap</span> <span class="o">=</span> <span class="n">bootstrap</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">x_title</span> <span class="o">=</span> <span class="n">x_label</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">y_title</span> <span class="o">=</span> <span class="n">y_label</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">graph_title</span> <span class="o">=</span> <span class="n">title</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">color_points</span> <span class="o">=</span> <span class="n">color_points</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">color_deming</span> <span class="o">=</span> <span class="n">color_deming</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">CI</span> <span class="o">=</span> <span class="n">CI</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">line_reference</span> <span class="o">=</span> <span class="n">line_reference</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">line_CI</span> <span class="o">=</span> <span class="n">line_CI</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">legend</span> <span class="o">=</span> <span class="n">legend</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">_check_params</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_derive_params</span><span class="p">()</span>
+
+    <span class="k">def</span> <span class="nf">_check_params</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">method1</span><span class="p">)</span> <span class="o">!=</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">method2</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;Length of method 1 and method 2 are not equal.&#39;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">bootstrap</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">bootstrap</span><span class="p">,</span> <span class="nb">int</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;Bootstrap argument should either be None or an integer.&#39;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">CI</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">CI</span> <span class="o">&gt;</span> <span class="mi">1</span> <span class="ow">or</span> <span class="bp">self</span><span class="o">.</span><span class="n">CI</span> <span class="o">&lt;</span> <span class="mi">0</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;Confidence interval must be between 0 and 1.&#39;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="nb">any</span><span class="p">([</span><span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="nb">str</span><span class="p">)</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">x_title</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">y_title</span><span class="p">]]):</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;Axes labels arguments should be provided as a str.&#39;</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">_derive_params</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">def</span> <span class="nf">_deming</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">lamb</span><span class="p">):</span>
+            <span class="n">ssdx</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">var</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">ddof</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span> <span class="o">*</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">n</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span>
+            <span class="n">ssdy</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">var</span><span class="p">(</span><span class="n">y</span><span class="p">,</span> <span class="n">ddof</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span> <span class="o">*</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">n</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span>
+            <span class="n">spdxy</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">cov</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">)[</span><span class="mi">1</span><span class="p">][</span><span class="mi">1</span><span class="p">]</span> <span class="o">*</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">n</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span>
+
+            <span class="n">beta</span> <span class="o">=</span> <span class="p">(</span><span class="n">ssdy</span> <span class="o">-</span> <span class="n">lamb</span> <span class="o">*</span> <span class="n">ssdx</span> <span class="o">+</span> <span class="n">math</span><span class="o">.</span><span class="n">sqrt</span><span class="p">((</span><span class="n">ssdy</span> <span class="o">-</span> <span class="n">lamb</span> <span class="o">*</span> <span class="n">ssdx</span><span class="p">)</span> <span class="o">**</span> <span class="mi">2</span> <span class="o">+</span> <span class="mi">4</span> <span class="o">*</span> <span class="n">lamb</span> <span class="o">*</span> <span class="p">(</span><span class="n">ssdy</span> <span class="o">**</span> <span class="mi">2</span><span class="p">)))</span> <span class="o">/</span> <span class="p">(</span>
+                    <span class="mi">2</span> <span class="o">*</span> <span class="n">spdxy</span><span class="p">)</span>
+            <span class="n">alpha</span> <span class="o">=</span> <span class="n">y</span><span class="o">.</span><span class="n">mean</span><span class="p">()</span> <span class="o">-</span> <span class="n">beta</span> <span class="o">*</span> <span class="n">x</span><span class="o">.</span><span class="n">mean</span><span class="p">()</span>
+
+            <span class="n">ksi</span> <span class="o">=</span> <span class="p">(</span><span class="n">lamb</span> <span class="o">*</span> <span class="n">x</span> <span class="o">+</span> <span class="n">beta</span> <span class="o">*</span> <span class="p">(</span><span class="n">y</span> <span class="o">-</span> <span class="n">alpha</span><span class="p">))</span> <span class="o">/</span> <span class="p">(</span><span class="n">lamb</span> <span class="o">+</span> <span class="n">beta</span> <span class="o">**</span> <span class="mi">2</span><span class="p">)</span>
+            <span class="n">sigmax</span> <span class="o">=</span> <span class="n">lamb</span> <span class="o">*</span> <span class="nb">sum</span><span class="p">((</span><span class="n">x</span> <span class="o">-</span> <span class="n">ksi</span><span class="p">)</span> <span class="o">**</span> <span class="mi">2</span><span class="p">)</span> <span class="o">+</span> <span class="nb">sum</span><span class="p">((</span><span class="n">y</span> <span class="o">-</span> <span class="n">alpha</span> <span class="o">-</span> <span class="n">beta</span> <span class="o">*</span> <span class="n">ksi</span><span class="p">)</span> <span class="o">**</span> <span class="mi">2</span><span class="p">)</span> <span class="o">/</span> <span class="p">(</span>
+                    <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">n</span> <span class="o">-</span> <span class="mi">2</span><span class="p">)</span> <span class="o">*</span> <span class="n">beta</span><span class="p">)</span>
+            <span class="n">sigmay</span> <span class="o">=</span> <span class="n">math</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">lamb</span> <span class="o">*</span> <span class="n">sigmax</span><span class="p">)</span>
+            <span class="n">sigmax</span> <span class="o">=</span> <span class="n">math</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">sigmax</span><span class="p">)</span>
+
+            <span class="k">return</span> <span class="n">alpha</span><span class="p">,</span> <span class="n">beta</span><span class="p">,</span> <span class="n">sigmax</span><span class="p">,</span> <span class="n">sigmay</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">n</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">method1</span><span class="p">)</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">vr</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">_lambda</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">vr</span>
+        <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">sdr</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">_lambda</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">sdr</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">_lambda</span> <span class="o">=</span> <span class="mi">1</span>
+
+        <span class="n">params</span> <span class="o">=</span> <span class="n">_deming</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">method1</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">method2</span><span class="p">,</span> <span class="n">_lambda</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">bootstrap</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">alpha</span> <span class="o">=</span> <span class="n">params</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">beta</span> <span class="o">=</span> <span class="n">params</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">sigmax</span> <span class="o">=</span> <span class="n">params</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">sigmay</span> <span class="o">=</span> <span class="n">params</span><span class="p">[</span><span class="mi">3</span><span class="p">]</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">_params</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">([</span><span class="bp">self</span><span class="o">.</span><span class="n">bootstrap</span><span class="p">,</span> <span class="mi">4</span><span class="p">])</span>
+
+            <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">bootstrap</span><span class="p">):</span>
+                <span class="n">idx</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">choice</span><span class="p">(</span><span class="nb">range</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">n</span><span class="p">),</span> <span class="bp">self</span><span class="o">.</span><span class="n">n</span><span class="p">,</span> <span class="n">replace</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+                <span class="n">_params</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">_deming</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">take</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">method1</span><span class="p">,</span> <span class="n">idx</span><span class="p">),</span> <span class="n">np</span><span class="o">.</span><span class="n">take</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">method2</span><span class="p">,</span> <span class="n">idx</span><span class="p">),</span> <span class="n">_lambda</span><span class="p">)</span>
+
+            <span class="n">_paramsdf</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">_params</span><span class="p">,</span> <span class="n">columns</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;alpha&#39;</span><span class="p">,</span> <span class="s1">&#39;beta&#39;</span><span class="p">,</span> <span class="s1">&#39;sigmax&#39;</span><span class="p">,</span> <span class="s1">&#39;sigmay&#39;</span><span class="p">])</span>
+            <span class="n">se</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">diag</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">cov</span><span class="p">(</span><span class="n">_paramsdf</span><span class="o">.</span><span class="n">cov</span><span class="p">())))</span>
+            <span class="n">t</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">transpose</span><span class="p">(</span>
+                <span class="n">np</span><span class="o">.</span><span class="n">apply_along_axis</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">quantile</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="n">_params</span><span class="p">,</span> <span class="p">[</span><span class="mf">0.5</span><span class="p">,</span> <span class="p">(</span><span class="mi">1</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">CI</span><span class="p">)</span> <span class="o">/</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">1</span> <span class="o">-</span> <span class="p">(</span><span class="mi">1</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">CI</span><span class="p">)</span> <span class="o">/</span> <span class="mi">2</span><span class="p">]))</span>
+
+            <span class="bp">self</span><span class="o">.</span><span class="n">alpha</span> <span class="o">=</span> <span class="p">[</span><span class="n">t</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="mi">0</span><span class="p">],</span> <span class="n">se</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">t</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="mi">1</span><span class="p">],</span> <span class="n">t</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="mi">2</span><span class="p">]]</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">beta</span> <span class="o">=</span> <span class="p">[</span><span class="n">t</span><span class="p">[</span><span class="mi">1</span><span class="p">][</span><span class="mi">0</span><span class="p">],</span> <span class="n">se</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">t</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="mi">1</span><span class="p">],</span> <span class="n">t</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="mi">2</span><span class="p">]]</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">sigmax</span> <span class="o">=</span> <span class="p">[</span><span class="n">t</span><span class="p">[</span><span class="mi">2</span><span class="p">][</span><span class="mi">0</span><span class="p">],</span> <span class="n">se</span><span class="p">[</span><span class="mi">2</span><span class="p">],</span> <span class="n">t</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="mi">1</span><span class="p">],</span> <span class="n">t</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="mi">2</span><span class="p">]]</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">sigmay</span> <span class="o">=</span> <span class="p">[</span><span class="n">t</span><span class="p">[</span><span class="mi">3</span><span class="p">][</span><span class="mi">0</span><span class="p">],</span> <span class="n">se</span><span class="p">[</span><span class="mi">3</span><span class="p">],</span> <span class="n">t</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="mi">1</span><span class="p">],</span> <span class="n">t</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="mi">2</span><span class="p">]]</span>
+
+    <span class="k">def</span> <span class="nf">plot</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ax</span><span class="p">):</span>
+        <span class="c1"># plot individual points</span>
+        <span class="n">ax</span><span class="o">.</span><span class="n">scatter</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">method1</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">method2</span><span class="p">,</span> <span class="n">s</span><span class="o">=</span><span class="mi">20</span><span class="p">,</span> <span class="n">alpha</span><span class="o">=</span><span class="mf">0.6</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">color_points</span><span class="p">)</span>
+
+        <span class="c1"># plot reference line</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">line_reference</span><span class="p">:</span>
+            <span class="n">ax</span><span class="o">.</span><span class="n">plot</span><span class="p">([</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">],</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">],</span> <span class="n">label</span><span class="o">=</span><span class="s1">&#39;Reference&#39;</span><span class="p">,</span>
+                    <span class="n">color</span><span class="o">=</span><span class="s1">&#39;grey&#39;</span><span class="p">,</span> <span class="n">linestyle</span><span class="o">=</span><span class="s1">&#39;--&#39;</span><span class="p">,</span> <span class="n">transform</span><span class="o">=</span><span class="n">ax</span><span class="o">.</span><span class="n">transAxes</span><span class="p">)</span>
+
+        <span class="c1"># plot Deming-line</span>
+        <span class="n">_xvals</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">ax</span><span class="o">.</span><span class="n">get_xlim</span><span class="p">())</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">bootstrap</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">_yvals</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">alpha</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">beta</span> <span class="o">*</span> <span class="n">_xvals</span>
+            <span class="n">ax</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">_xvals</span><span class="p">,</span> <span class="n">_yvals</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="sa">f</span><span class="s1">&#39;</span><span class="si">{self.alpha:.2f}</span><span class="s1"> + </span><span class="si">{self.beta:.2f}</span><span class="s1"> * Method 1&#39;</span><span class="p">,</span>
+                    <span class="n">color</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">color_deming</span><span class="p">,</span> <span class="n">linestyle</span><span class="o">=</span><span class="s1">&#39;-&#39;</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">_yvals</span> <span class="o">=</span> <span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">alpha</span><span class="p">[</span><span class="n">s</span><span class="p">]</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">beta</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">*</span> <span class="n">_xvals</span> <span class="k">for</span> <span class="n">s</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">4</span><span class="p">)]</span>
+            <span class="n">ax</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">_xvals</span><span class="p">,</span> <span class="n">_yvals</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">label</span><span class="o">=</span><span class="sa">f</span><span class="s1">&#39;</span><span class="si">{self.alpha[0]:.2f}</span><span class="s1"> + </span><span class="si">{self.beta[0]:.2f}</span><span class="s1"> * Method 1&#39;</span><span class="p">,</span>
+                    <span class="n">color</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">color_deming</span><span class="p">,</span> <span class="n">linestyle</span><span class="o">=</span><span class="s1">&#39;-&#39;</span><span class="p">)</span>
+            <span class="n">ax</span><span class="o">.</span><span class="n">fill_between</span><span class="p">(</span><span class="n">_xvals</span><span class="p">,</span> <span class="n">_yvals</span><span class="p">[</span><span class="mi">2</span><span class="p">],</span> <span class="n">_yvals</span><span class="p">[</span><span class="mi">3</span><span class="p">],</span> <span class="n">color</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">color_deming</span><span class="p">,</span> <span class="n">alpha</span><span class="o">=</span><span class="mf">0.2</span><span class="p">)</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">line_CI</span><span class="p">:</span>
+                <span class="n">ax</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">_xvals</span><span class="p">,</span> <span class="n">_yvals</span><span class="p">[</span><span class="mi">2</span><span class="p">],</span> <span class="n">linestyle</span><span class="o">=</span><span class="s1">&#39;--&#39;</span><span class="p">)</span>
+                <span class="n">ax</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">_xvals</span><span class="p">,</span> <span class="n">_yvals</span><span class="p">[</span><span class="mi">3</span><span class="p">],</span> <span class="n">linestyle</span><span class="o">=</span><span class="s1">&#39;--&#39;</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">legend</span><span class="p">:</span>
+            <span class="n">ax</span><span class="o">.</span><span class="n">legend</span><span class="p">(</span><span class="n">loc</span><span class="o">=</span><span class="s1">&#39;upper left&#39;</span><span class="p">,</span> <span class="n">frameon</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+
+        <span class="n">ax</span><span class="o">.</span><span class="n">set_ylabel</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">y_title</span><span class="p">)</span>
+        <span class="n">ax</span><span class="o">.</span><span class="n">set_xlabel</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">x_title</span><span class="p">)</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">graph_title</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">ax</span><span class="o">.</span><span class="n">set_title</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">graph_title</span><span class="p">)</span>
+
+
+<div class="viewcode-block" id="deming"><a class="viewcode-back" href="../../index.html#methcomp.regression.deming">[docs]</a><span class="k">def</span> <span class="nf">deming</span><span class="p">(</span><span class="n">method1</span><span class="p">,</span> <span class="n">method2</span><span class="p">,</span>
+           <span class="n">vr</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">sdr</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">bootstrap</span><span class="o">=</span><span class="mi">1000</span><span class="p">,</span>
+           <span class="n">x_label</span><span class="o">=</span><span class="s1">&#39;Method 1&#39;</span><span class="p">,</span> <span class="n">y_label</span><span class="o">=</span><span class="s1">&#39;Method 2&#39;</span><span class="p">,</span> <span class="n">title</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+           <span class="n">CI</span><span class="o">=</span><span class="mf">0.95</span><span class="p">,</span> <span class="n">line_reference</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">line_CI</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">legend</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+           <span class="n">color_points</span><span class="o">=</span><span class="s1">&#39;#000000&#39;</span><span class="p">,</span> <span class="n">color_deming</span><span class="o">=</span><span class="s1">&#39;#008bff&#39;</span><span class="p">,</span>
+           <span class="n">square</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">ax</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Provide a method comparison using Deming regression.</span>
+
+<span class="sd">    This is an Axis-level function which will draw the Passing-Bablok plot</span>
+<span class="sd">    onto the current active Axis object unless ``ax`` is provided.</span>
+
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    method1, method2 : array, or list</span>
+<span class="sd">        Values obtained from both methods, preferably provided in a np.array.</span>
+<span class="sd">    vr : float</span>
+<span class="sd">        The assumed known ratio of the (residual) variance of the ys relative to that of the xs.</span>
+<span class="sd">        Defaults to 1.</span>
+<span class="sd">    sdr : float</span>
+<span class="sd">        The assumed known standard deviations. Parameter vr takes precedence if both are given.</span>
+<span class="sd">        Defaults to 1.</span>
+<span class="sd">    bootstrap : int or None</span>
+<span class="sd">        Amount of bootstrap estimates that should be performed to acquire standard errors (and confidence</span>
+<span class="sd">        intervals). If None, no bootstrapping is performed. Defaults to 1000.</span>
+<span class="sd">    x_label : str, optional</span>
+<span class="sd">        The label which is added to the X-axis. If None is provided, a standard</span>
+<span class="sd">        label will be added.</span>
+<span class="sd">    y_label : str, optional</span>
+<span class="sd">        The label which is added to the Y-axis. If None is provided, a standard</span>
+<span class="sd">        label will be added.</span>
+<span class="sd">    title : str, optional</span>
+<span class="sd">        Title of the Passing-Bablok plot. If None is provided, no title will be plotted.</span>
+<span class="sd">    CI : float, optional</span>
+<span class="sd">        The confidence interval employed in the mean difference and limit of agreement</span>
+<span class="sd">        lines. Defaults to 0.95.</span>
+<span class="sd">    line_reference : bool, optional</span>
+<span class="sd">        If True, a grey reference line at y=x will be plotted in the plot.</span>
+<span class="sd">        Defaults to true.</span>
+<span class="sd">    line_CI : bool, optional</span>
+<span class="sd">        If True, dashed lines will be plotted at the boundaries of the confidence intervals.</span>
+<span class="sd">        Defaults to false.</span>
+<span class="sd">    legend : bool, optional</span>
+<span class="sd">        If True, will provide a legend containing the computed Passing-Bablok equation.</span>
+<span class="sd">        Defaults to true.</span>
+<span class="sd">    color_points : str, optional</span>
+<span class="sd">        Color of the individual differences that will be plotted.</span>
+<span class="sd">        Color should be provided in format compatible with matplotlib.</span>
+<span class="sd">    color_deming : str, optional</span>
+<span class="sd">        Color of the mean difference line that will be plotted.</span>
+<span class="sd">        Color should be provided in format compatible with matplotlib.</span>
+<span class="sd">    square : bool, optional</span>
+<span class="sd">        If True, set the Axes aspect to &quot;equal&quot; so each cell will be</span>
+<span class="sd">        square-shaped.</span>
+<span class="sd">    ax : matplotlib Axes, optional</span>
+<span class="sd">        Axes in which to draw the plot, otherwise use the currently-active</span>
+<span class="sd">        Axes.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    ax : matplotlib Axes</span>
+<span class="sd">        Axes object with the Bland-Altman plot.</span>
+
+<span class="sd">    See Also</span>
+<span class="sd">    -------</span>
+<span class="sd">    Koopmans, T. C. (1937). Linear regression analysis of economic time series. DeErven F. Bohn, Haarlem, Netherlands.</span>
+<span class="sd">    Deming, W. E. (1943). Statistical adjustment of data. Wiley, NY (Dover Publications edition, 1985).</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">plotter</span><span class="p">:</span> <span class="n">_Deming</span> <span class="o">=</span> <span class="n">_Deming</span><span class="p">(</span><span class="n">method1</span><span class="p">,</span> <span class="n">method2</span><span class="p">,</span>
+                               <span class="n">vr</span><span class="p">,</span> <span class="n">sdr</span><span class="p">,</span> <span class="n">bootstrap</span><span class="p">,</span>
+                               <span class="n">x_label</span><span class="p">,</span> <span class="n">y_label</span><span class="p">,</span> <span class="n">title</span><span class="p">,</span>
+                               <span class="n">CI</span><span class="p">,</span> <span class="n">line_reference</span><span class="p">,</span> <span class="n">line_CI</span><span class="p">,</span> <span class="n">legend</span><span class="p">,</span>
+                               <span class="n">color_points</span><span class="p">,</span> <span class="n">color_deming</span><span class="p">)</span>
+
+    <span class="c1"># Draw the plot and return the Axes</span>
+    <span class="k">if</span> <span class="n">ax</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">ax</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">gca</span><span class="p">()</span>
+
+    <span class="k">if</span> <span class="n">square</span><span class="p">:</span>
+        <span class="n">ax</span><span class="o">.</span><span class="n">set_aspect</span><span class="p">(</span><span class="s1">&#39;equal&#39;</span><span class="p">)</span>
+
+    <span class="n">plotter</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">ax</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">ax</span></div>
+
+
+<span class="k">class</span> <span class="nc">_PassingBablok</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Internal class for drawing a Passing-Bablok regression plot&quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">method1</span><span class="p">,</span> <span class="n">method2</span><span class="p">,</span>
+                 <span class="n">x_label</span><span class="p">,</span> <span class="n">y_label</span><span class="p">,</span> <span class="n">title</span><span class="p">,</span>
+                 <span class="n">CI</span><span class="p">,</span> <span class="n">line_reference</span><span class="p">,</span> <span class="n">line_CI</span><span class="p">,</span> <span class="n">legend</span><span class="p">,</span>
+                 <span class="n">color_points</span><span class="p">,</span> <span class="n">color_paba</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">method1</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">method1</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">method2</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">method2</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">x_title</span> <span class="o">=</span> <span class="n">x_label</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">y_title</span> <span class="o">=</span> <span class="n">y_label</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">graph_title</span> <span class="o">=</span> <span class="n">title</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">CI</span> <span class="o">=</span> <span class="n">CI</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">color_points</span> <span class="o">=</span> <span class="n">color_points</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">color_paba</span> <span class="o">=</span> <span class="n">color_paba</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">line_reference</span> <span class="o">=</span> <span class="n">line_reference</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">line_CI</span> <span class="o">=</span> <span class="n">line_CI</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">legend</span> <span class="o">=</span> <span class="n">legend</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">_check_params</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_derive_params</span><span class="p">()</span>
+
+    <span class="k">def</span> <span class="nf">_check_params</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">method1</span><span class="p">)</span> <span class="o">!=</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">method2</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;Length of method 1 and method 2 are not equal.&#39;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">CI</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">CI</span> <span class="o">&gt;</span> <span class="mi">1</span> <span class="ow">or</span> <span class="bp">self</span><span class="o">.</span><span class="n">CI</span> <span class="o">&lt;</span> <span class="mi">0</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;Confidence interval must be between 0 and 1.&#39;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="nb">any</span><span class="p">([</span><span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="nb">str</span><span class="p">)</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">x_title</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">y_title</span><span class="p">]]):</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;Axes labels arguments should be provided as a str.&#39;</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">_derive_params</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">n</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">method1</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">sv</span> <span class="o">=</span> <span class="p">[]</span>
+
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">n</span> <span class="o">-</span> <span class="mi">1</span><span class="p">):</span>
+            <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">i</span> <span class="o">+</span> <span class="mi">1</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">n</span><span class="p">):</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">sv</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="bp">self</span><span class="o">.</span><span class="n">method2</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">method2</span><span class="p">[</span><span class="n">j</span><span class="p">])</span> <span class="o">/</span>
+                               <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">method1</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">method1</span><span class="p">[</span><span class="n">j</span><span class="p">]))</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">sv</span><span class="o">.</span><span class="n">sort</span><span class="p">()</span>
+        <span class="n">n</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">sv</span><span class="p">)</span>
+        <span class="n">k</span> <span class="o">=</span> <span class="n">math</span><span class="o">.</span><span class="n">floor</span><span class="p">(</span><span class="nb">len</span><span class="p">([</span><span class="n">a</span> <span class="k">for</span> <span class="n">a</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">sv</span> <span class="k">if</span> <span class="n">a</span> <span class="o">&lt;</span> <span class="mi">0</span><span class="p">])</span> <span class="o">/</span> <span class="mi">2</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">n</span> <span class="o">%</span> <span class="mi">2</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">slope</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">sv</span><span class="p">[</span><span class="nb">int</span><span class="p">((</span><span class="n">n</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span> <span class="o">/</span> <span class="n">k</span> <span class="o">+</span> <span class="mi">2</span><span class="p">)]</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">slope</span> <span class="o">=</span> <span class="n">math</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">sv</span><span class="p">[</span><span class="nb">int</span><span class="p">(</span><span class="n">n</span> <span class="o">/</span> <span class="mi">2</span> <span class="o">+</span> <span class="n">k</span><span class="p">)]</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">sv</span><span class="p">[</span><span class="nb">int</span><span class="p">(</span><span class="n">n</span> <span class="o">/</span> <span class="mi">2</span> <span class="o">+</span> <span class="n">k</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)])</span>
+
+        <span class="n">_ci</span> <span class="o">=</span> <span class="n">st</span><span class="o">.</span><span class="n">norm</span><span class="o">.</span><span class="n">ppf</span><span class="p">(</span><span class="mi">1</span> <span class="o">-</span> <span class="p">(</span><span class="mi">1</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">CI</span><span class="p">)</span> <span class="o">/</span> <span class="mi">2</span><span class="p">)</span> <span class="o">*</span> <span class="n">math</span><span class="o">.</span><span class="n">sqrt</span><span class="p">((</span><span class="bp">self</span><span class="o">.</span><span class="n">n</span> <span class="o">*</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">n</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span> <span class="o">*</span> <span class="p">(</span><span class="mi">2</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">n</span> <span class="o">+</span> <span class="mi">5</span><span class="p">))</span> <span class="o">/</span> <span class="mi">18</span><span class="p">)</span>
+        <span class="n">_m1</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="nb">round</span><span class="p">((</span><span class="n">n</span> <span class="o">-</span> <span class="n">_ci</span><span class="p">)</span> <span class="o">/</span> <span class="mi">2</span><span class="p">))</span>
+        <span class="n">_m2</span> <span class="o">=</span> <span class="n">n</span> <span class="o">-</span> <span class="n">_m1</span> <span class="o">-</span> <span class="mi">1</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">slope</span> <span class="o">=</span> <span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">slope</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">sv</span><span class="p">[</span><span class="n">k</span> <span class="o">+</span> <span class="n">_m1</span><span class="p">],</span> <span class="bp">self</span><span class="o">.</span><span class="n">sv</span><span class="p">[</span><span class="n">k</span> <span class="o">+</span> <span class="n">_m2</span><span class="p">]]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">intercept</span> <span class="o">=</span> <span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">median</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">method2</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">slope</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">method1</span><span class="p">),</span>
+                          <span class="n">np</span><span class="o">.</span><span class="n">median</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">method2</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">slope</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">method1</span><span class="p">),</span>
+                          <span class="n">np</span><span class="o">.</span><span class="n">median</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">method2</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">slope</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">method1</span><span class="p">)]</span>
+
+    <span class="k">def</span> <span class="nf">plot</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ax</span><span class="p">):</span>
+        <span class="c1"># plot individual points</span>
+        <span class="n">ax</span><span class="o">.</span><span class="n">scatter</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">method1</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">method2</span><span class="p">,</span> <span class="n">s</span><span class="o">=</span><span class="mi">20</span><span class="p">,</span> <span class="n">alpha</span><span class="o">=</span><span class="mf">0.6</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">color_points</span><span class="p">)</span>
+
+        <span class="c1"># plot reference line</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">line_reference</span><span class="p">:</span>
+            <span class="n">ax</span><span class="o">.</span><span class="n">plot</span><span class="p">([</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">],</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">],</span> <span class="n">label</span><span class="o">=</span><span class="s1">&#39;Reference&#39;</span><span class="p">,</span>
+                    <span class="n">color</span><span class="o">=</span><span class="s1">&#39;grey&#39;</span><span class="p">,</span> <span class="n">linestyle</span><span class="o">=</span><span class="s1">&#39;--&#39;</span><span class="p">,</span> <span class="n">transform</span><span class="o">=</span><span class="n">ax</span><span class="o">.</span><span class="n">transAxes</span><span class="p">)</span>
+
+        <span class="c1"># plot PaBa-line</span>
+        <span class="n">_xvals</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">ax</span><span class="o">.</span><span class="n">get_xlim</span><span class="p">())</span>
+        <span class="n">_yvals</span> <span class="o">=</span> <span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">intercept</span><span class="p">[</span><span class="n">s</span><span class="p">]</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">slope</span><span class="p">[</span><span class="n">s</span><span class="p">]</span> <span class="o">*</span> <span class="n">_xvals</span> <span class="k">for</span> <span class="n">s</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">3</span><span class="p">)]</span>
+        <span class="n">ax</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">_xvals</span><span class="p">,</span> <span class="n">_yvals</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">label</span><span class="o">=</span><span class="sa">f</span><span class="s1">&#39;</span><span class="si">{self.intercept[0]:.2f}</span><span class="s1"> + </span><span class="si">{self.slope[0]:.2f}</span><span class="s1"> * Method 1&#39;</span><span class="p">,</span>
+                <span class="n">color</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">color_paba</span><span class="p">,</span> <span class="n">linestyle</span><span class="o">=</span><span class="s1">&#39;-&#39;</span><span class="p">)</span>
+        <span class="n">ax</span><span class="o">.</span><span class="n">fill_between</span><span class="p">(</span><span class="n">_xvals</span><span class="p">,</span> <span class="n">_yvals</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">_yvals</span><span class="p">[</span><span class="mi">2</span><span class="p">],</span> <span class="n">color</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">color_paba</span><span class="p">,</span> <span class="n">alpha</span><span class="o">=</span><span class="mf">0.2</span><span class="p">)</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">line_CI</span><span class="p">:</span>
+            <span class="n">ax</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">_xvals</span><span class="p">,</span> <span class="n">_yvals</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">linestyle</span><span class="o">=</span><span class="s1">&#39;--&#39;</span><span class="p">)</span>
+            <span class="n">ax</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">_xvals</span><span class="p">,</span> <span class="n">_yvals</span><span class="p">[</span><span class="mi">2</span><span class="p">],</span> <span class="n">linestyle</span><span class="o">=</span><span class="s1">&#39;--&#39;</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">legend</span><span class="p">:</span>
+            <span class="n">ax</span><span class="o">.</span><span class="n">legend</span><span class="p">(</span><span class="n">loc</span><span class="o">=</span><span class="s1">&#39;upper left&#39;</span><span class="p">,</span> <span class="n">frameon</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+
+        <span class="n">ax</span><span class="o">.</span><span class="n">set_ylabel</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">y_title</span><span class="p">)</span>
+        <span class="n">ax</span><span class="o">.</span><span class="n">set_xlabel</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">x_title</span><span class="p">)</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">graph_title</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">ax</span><span class="o">.</span><span class="n">set_title</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">graph_title</span><span class="p">)</span>
+
+
+<div class="viewcode-block" id="passingbablok"><a class="viewcode-back" href="../../index.html#methcomp.regression.passingbablok">[docs]</a><span class="k">def</span> <span class="nf">passingbablok</span><span class="p">(</span><span class="n">method1</span><span class="p">,</span> <span class="n">method2</span><span class="p">,</span>
+                  <span class="n">x_label</span><span class="o">=</span><span class="s1">&#39;Method 1&#39;</span><span class="p">,</span> <span class="n">y_label</span><span class="o">=</span><span class="s1">&#39;Method 2&#39;</span><span class="p">,</span> <span class="n">title</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                  <span class="n">CI</span><span class="o">=</span><span class="mf">0.95</span><span class="p">,</span> <span class="n">line_reference</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">line_CI</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">legend</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+                  <span class="n">color_points</span><span class="o">=</span><span class="s1">&#39;#000000&#39;</span><span class="p">,</span> <span class="n">color_paba</span><span class="o">=</span><span class="s1">&#39;#008bff&#39;</span><span class="p">,</span>
+                  <span class="n">square</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">ax</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Provide a method comparison using Passing-Bablok regression.</span>
+
+<span class="sd">    This is an Axis-level function which will draw the Passing-Bablok plot</span>
+<span class="sd">    onto the current active Axis object unless ``ax`` is provided.</span>
+
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    method1, method2 : array, or list</span>
+<span class="sd">        Values obtained from both methods, preferably provided in a np.array.</span>
+<span class="sd">    x_label : str, optional</span>
+<span class="sd">        The label which is added to the X-axis. If None is provided, a standard</span>
+<span class="sd">        label will be added.</span>
+<span class="sd">    y_label : str, optional</span>
+<span class="sd">        The label which is added to the Y-axis. If None is provided, a standard</span>
+<span class="sd">        label will be added.</span>
+<span class="sd">    title : str, optional</span>
+<span class="sd">        Title of the Passing-Bablok plot. If None is provided, no title will be plotted.</span>
+<span class="sd">    CI : float, optional</span>
+<span class="sd">        The confidence interval employed in the mean difference and limit of agreement</span>
+<span class="sd">        lines. Defaults to 0.95.</span>
+<span class="sd">    line_reference : bool, optional</span>
+<span class="sd">        If True, a grey reference line at y=x will be plotted in the plot.</span>
+<span class="sd">        Defaults to true.</span>
+<span class="sd">    line_CI : bool, optional</span>
+<span class="sd">        If True, dashed lines will be plotted at the boundaries of the confidence intervals.</span>
+<span class="sd">        Defaults to false.</span>
+<span class="sd">    legend : bool, optional</span>
+<span class="sd">        If True, will provide a legend containing the computed Passing-Bablok equation.</span>
+<span class="sd">        Defaults to true.</span>
+<span class="sd">    color_points : str, optional</span>
+<span class="sd">        Color of the individual differences that will be plotted.</span>
+<span class="sd">        Color should be provided in format compatible with matplotlib.</span>
+<span class="sd">    color_paba : str, optional</span>
+<span class="sd">        Color of the mean difference line that will be plotted.</span>
+<span class="sd">        Color should be provided in format compatible with matplotlib.</span>
+<span class="sd">    square : bool, optional</span>
+<span class="sd">        If True, set the Axes aspect to &quot;equal&quot; so each cell will be</span>
+<span class="sd">        square-shaped.</span>
+<span class="sd">    ax : matplotlib Axes, optional</span>
+<span class="sd">        Axes in which to draw the plot, otherwise use the currently-active</span>
+<span class="sd">        Axes.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    ax : matplotlib Axes</span>
+<span class="sd">        Axes object with the Bland-Altman plot.</span>
+
+<span class="sd">    See Also</span>
+<span class="sd">    -------</span>
+<span class="sd">    Passing H and Bablok W. J Clin Chem Clin Biochem, vol. 21, no. 11, 1983, pp. 709 - 720</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">plotter</span><span class="p">:</span> <span class="n">_PassingBablok</span> <span class="o">=</span> <span class="n">_PassingBablok</span><span class="p">(</span><span class="n">method1</span><span class="p">,</span> <span class="n">method2</span><span class="p">,</span>
+                                             <span class="n">x_label</span><span class="p">,</span> <span class="n">y_label</span><span class="p">,</span> <span class="n">title</span><span class="p">,</span>
+                                             <span class="n">CI</span><span class="p">,</span> <span class="n">line_reference</span><span class="p">,</span> <span class="n">line_CI</span><span class="p">,</span> <span class="n">legend</span><span class="p">,</span>
+                                             <span class="n">color_points</span><span class="p">,</span> <span class="n">color_paba</span><span class="p">)</span>
+
+    <span class="c1"># Draw the plot and return the Axes</span>
+    <span class="k">if</span> <span class="n">ax</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">ax</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">gca</span><span class="p">()</span>
+
+    <span class="k">if</span> <span class="n">square</span><span class="p">:</span>
+        <span class="n">ax</span><span class="o">.</span><span class="n">set_aspect</span><span class="p">(</span><span class="s1">&#39;equal&#39;</span><span class="p">)</span>
+
+    <span class="n">plotter</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">ax</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">ax</span></div>
+
+<span class="k">class</span> <span class="nc">_Linear</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Internal class for drawing a simple, linear regression plot&quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">method1</span><span class="p">,</span> <span class="n">method2</span><span class="p">,</span>
+                 <span class="n">x_label</span><span class="p">,</span> <span class="n">y_label</span><span class="p">,</span> <span class="n">title</span><span class="p">,</span>
+                 <span class="n">CI</span><span class="p">,</span> <span class="n">line_reference</span><span class="p">,</span> <span class="n">line_CI</span><span class="p">,</span> <span class="n">legend</span><span class="p">,</span>
+                 <span class="n">color_points</span><span class="p">,</span> <span class="n">color_paba</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">method1</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">method1</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">method2</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">method2</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">x_title</span> <span class="o">=</span> <span class="n">x_label</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">y_title</span> <span class="o">=</span> <span class="n">y_label</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">graph_title</span> <span class="o">=</span> <span class="n">title</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">CI</span> <span class="o">=</span> <span class="n">CI</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">color_points</span> <span class="o">=</span> <span class="n">color_points</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">color_paba</span> <span class="o">=</span> <span class="n">color_paba</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">line_reference</span> <span class="o">=</span> <span class="n">line_reference</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">line_CI</span> <span class="o">=</span> <span class="n">line_CI</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">legend</span> <span class="o">=</span> <span class="n">legend</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">_check_params</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_derive_params</span><span class="p">()</span>
+
+    <span class="k">def</span> <span class="nf">_check_params</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">method1</span><span class="p">)</span> <span class="o">!=</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">method2</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;Length of method 1 and method 2 are not equal.&#39;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">CI</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">CI</span> <span class="o">&gt;</span> <span class="mi">1</span> <span class="ow">or</span> <span class="bp">self</span><span class="o">.</span><span class="n">CI</span> <span class="o">&lt;</span> <span class="mi">0</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;Confidence interval must be between 0 and 1.&#39;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="nb">any</span><span class="p">([</span><span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="nb">str</span><span class="p">)</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">x_title</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">y_title</span><span class="p">]]):</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;Axes labels arguments should be provided as a str.&#39;</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">_derive_params</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">n</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">method1</span><span class="p">)</span>
+        <span class="n">_model</span> <span class="o">=</span> <span class="n">sm</span><span class="o">.</span><span class="n">OLS</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">method1</span><span class="p">,</span> <span class="n">sm</span><span class="o">.</span><span class="n">add_constant</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">method2</span><span class="p">))</span><span class="o">.</span><span class="n">fit</span><span class="p">()</span>
+        <span class="n">_params</span> <span class="o">=</span> <span class="n">_model</span><span class="o">.</span><span class="n">params</span>
+        <span class="n">_confint</span> <span class="o">=</span> <span class="n">_model</span><span class="o">.</span><span class="n">conf_int</span><span class="p">(</span><span class="n">alpha</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">CI</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">intercept</span> <span class="o">=</span> <span class="p">[</span><span class="n">_confint</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="mi">0</span><span class="p">],</span> <span class="n">_params</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">_confint</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="mi">1</span><span class="p">]]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">slope</span> <span class="o">=</span> <span class="p">[</span><span class="n">_confint</span><span class="p">[</span><span class="mi">1</span><span class="p">][</span><span class="mi">0</span><span class="p">],</span> <span class="n">_params</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">_confint</span><span class="p">[</span><span class="mi">1</span><span class="p">][</span><span class="mi">1</span><span class="p">]]</span>
+
+    <span class="k">def</span> <span class="nf">plot</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ax</span><span class="p">):</span>
+        <span class="c1"># plot individual points</span>
+        <span class="n">ax</span><span class="o">.</span><span class="n">scatter</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">method1</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">method2</span><span class="p">,</span> <span class="n">s</span><span class="o">=</span><span class="mi">20</span><span class="p">,</span> <span class="n">alpha</span><span class="o">=</span><span class="mf">0.6</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">color_points</span><span class="p">)</span>
+
+        <span class="c1"># plot reference line</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">line_reference</span><span class="p">:</span>
+            <span class="n">ax</span><span class="o">.</span><span class="n">plot</span><span class="p">([</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">],</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">],</span> <span class="n">label</span><span class="o">=</span><span class="s1">&#39;Reference&#39;</span><span class="p">,</span>
+                    <span class="n">color</span><span class="o">=</span><span class="s1">&#39;grey&#39;</span><span class="p">,</span> <span class="n">linestyle</span><span class="o">=</span><span class="s1">&#39;--&#39;</span><span class="p">,</span> <span class="n">transform</span><span class="o">=</span><span class="n">ax</span><span class="o">.</span><span class="n">transAxes</span><span class="p">)</span>
+
+        <span class="c1"># plot linear regression</span>
+        <span class="n">_xvals</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">ax</span><span class="o">.</span><span class="n">get_xlim</span><span class="p">())</span>
+        <span class="n">_yvals</span> <span class="o">=</span> <span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">intercept</span><span class="p">[</span><span class="n">s</span><span class="p">]</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">slope</span><span class="p">[</span><span class="n">s</span><span class="p">]</span> <span class="o">*</span> <span class="n">_xvals</span> <span class="k">for</span> <span class="n">s</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">3</span><span class="p">)]</span>
+        <span class="n">ax</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">_xvals</span><span class="p">,</span> <span class="n">_yvals</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">label</span><span class="o">=</span><span class="sa">f</span><span class="s1">&#39;</span><span class="si">{self.intercept[0]:.2f}</span><span class="s1"> + </span><span class="si">{self.slope[0]:.2f}</span><span class="s1"> * Method 1&#39;</span><span class="p">,</span>
+                <span class="n">color</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">color_paba</span><span class="p">,</span> <span class="n">linestyle</span><span class="o">=</span><span class="s1">&#39;-&#39;</span><span class="p">)</span>
+        <span class="n">ax</span><span class="o">.</span><span class="n">fill_between</span><span class="p">(</span><span class="n">_xvals</span><span class="p">,</span> <span class="n">_yvals</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">_yvals</span><span class="p">[</span><span class="mi">2</span><span class="p">],</span> <span class="n">color</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">color_paba</span><span class="p">,</span> <span class="n">alpha</span><span class="o">=</span><span class="mf">0.2</span><span class="p">)</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">line_CI</span><span class="p">:</span>
+            <span class="n">ax</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">_xvals</span><span class="p">,</span> <span class="n">_yvals</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">linestyle</span><span class="o">=</span><span class="s1">&#39;--&#39;</span><span class="p">)</span>
+            <span class="n">ax</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">_xvals</span><span class="p">,</span> <span class="n">_yvals</span><span class="p">[</span><span class="mi">2</span><span class="p">],</span> <span class="n">linestyle</span><span class="o">=</span><span class="s1">&#39;--&#39;</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">legend</span><span class="p">:</span>
+            <span class="n">ax</span><span class="o">.</span><span class="n">legend</span><span class="p">(</span><span class="n">loc</span><span class="o">=</span><span class="s1">&#39;upper left&#39;</span><span class="p">,</span> <span class="n">frameon</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+
+        <span class="n">ax</span><span class="o">.</span><span class="n">set_ylabel</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">y_title</span><span class="p">)</span>
+        <span class="n">ax</span><span class="o">.</span><span class="n">set_xlabel</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">x_title</span><span class="p">)</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">graph_title</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">ax</span><span class="o">.</span><span class="n">set_title</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">graph_title</span><span class="p">)</span>
+
+
+<div class="viewcode-block" id="linear"><a class="viewcode-back" href="../../index.html#methcomp.regression.linear">[docs]</a><span class="k">def</span> <span class="nf">linear</span><span class="p">(</span><span class="n">method1</span><span class="p">,</span> <span class="n">method2</span><span class="p">,</span>
+           <span class="n">x_label</span><span class="o">=</span><span class="s1">&#39;Method 1&#39;</span><span class="p">,</span> <span class="n">y_label</span><span class="o">=</span><span class="s1">&#39;Method 2&#39;</span><span class="p">,</span> <span class="n">title</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+           <span class="n">CI</span><span class="o">=</span><span class="mf">0.95</span><span class="p">,</span> <span class="n">line_reference</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">line_CI</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">legend</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+           <span class="n">color_points</span><span class="o">=</span><span class="s1">&#39;#000000&#39;</span><span class="p">,</span> <span class="n">color_paba</span><span class="o">=</span><span class="s1">&#39;#008bff&#39;</span><span class="p">,</span>
+           <span class="n">square</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">ax</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Provide a method comparison using simple, linear regression.</span>
+
+<span class="sd">    This is an Axis-level function which will draw the linear regression plot</span>
+<span class="sd">    onto the current active Axis object unless ``ax`` is provided.</span>
+
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    method1, method2 : array, or list</span>
+<span class="sd">        Values obtained from both methods, preferably provided in a np.array.</span>
+<span class="sd">    x_label : str, optional</span>
+<span class="sd">        The label which is added to the X-axis. If None is provided, a standard</span>
+<span class="sd">        label will be added.</span>
+<span class="sd">    y_label : str, optional</span>
+<span class="sd">        The label which is added to the Y-axis. If None is provided, a standard</span>
+<span class="sd">        label will be added.</span>
+<span class="sd">    title : str, optional</span>
+<span class="sd">        Title of the linear regression plot. If None is provided, no title will be plotted.</span>
+<span class="sd">    CI : float, optional</span>
+<span class="sd">        The confidence interval employed in the mean difference and limit of agreement</span>
+<span class="sd">        lines. Defaults to 0.95.</span>
+<span class="sd">    line_reference : bool, optional</span>
+<span class="sd">        If True, a grey reference line at y=x will be plotted in the plot.</span>
+<span class="sd">        Defaults to true.</span>
+<span class="sd">    line_CI : bool, optional</span>
+<span class="sd">        If True, dashed lines will be plotted at the boundaries of the confidence intervals.</span>
+<span class="sd">        Defaults to false.</span>
+<span class="sd">    legend : bool, optional</span>
+<span class="sd">        If True, will provide a legend containing the computed Linear regression equation.</span>
+<span class="sd">        Defaults to true.</span>
+<span class="sd">    color_points : str, optional</span>
+<span class="sd">        Color of the individual differences that will be plotted.</span>
+<span class="sd">        Color should be provided in format compatible with matplotlib.</span>
+<span class="sd">    color_paba : str, optional</span>
+<span class="sd">        Color of the mean difference line that will be plotted.</span>
+<span class="sd">        Color should be provided in format compatible with matplotlib.</span>
+<span class="sd">    square : bool, optional</span>
+<span class="sd">        If True, set the Axes aspect to &quot;equal&quot; so each cell will be</span>
+<span class="sd">        square-shaped.</span>
+<span class="sd">    ax : matplotlib Axes, optional</span>
+<span class="sd">        Axes in which to draw the plot, otherwise use the currently-active</span>
+<span class="sd">        Axes.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    ax : matplotlib Axes</span>
+<span class="sd">        Axes object with the Bland-Altman plot.</span>
+
+<span class="sd">    See Also</span>
+<span class="sd">    -------</span>
+<span class="sd">    ..............</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">plotter</span><span class="p">:</span> <span class="n">_Linear</span> <span class="o">=</span> <span class="n">_Linear</span><span class="p">(</span><span class="n">method1</span><span class="p">,</span> <span class="n">method2</span><span class="p">,</span>
+                               <span class="n">x_label</span><span class="p">,</span> <span class="n">y_label</span><span class="p">,</span> <span class="n">title</span><span class="p">,</span>
+                               <span class="n">CI</span><span class="p">,</span> <span class="n">line_reference</span><span class="p">,</span> <span class="n">line_CI</span><span class="p">,</span> <span class="n">legend</span><span class="p">,</span>
+                               <span class="n">color_points</span><span class="p">,</span> <span class="n">color_paba</span><span class="p">)</span>
+
+    <span class="c1"># Draw the plot and return the Axes</span>
+    <span class="k">if</span> <span class="n">ax</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">ax</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">gca</span><span class="p">()</span>
+
+    <span class="k">if</span> <span class="n">square</span><span class="p">:</span>
+        <span class="n">ax</span><span class="o">.</span><span class="n">set_aspect</span><span class="p">(</span><span class="s1">&#39;equal&#39;</span><span class="p">)</span>
+
+    <span class="n">plotter</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">ax</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">ax</span></div>
+</pre></div>
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper"><div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../../index.html">Documentation overview</a><ul>
+  <li><a href="../index.html">Module code</a><ul>
+  </ul></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="../../search.html" method="get">
+      <div><input type="text" name="q" /></div>
+      <div><input type="submit" value="Go" /></div>
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2019, William P.T.M. van Doorn.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.6.7</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.8</a>
+      
+    </div>
+
+    
+
+    
+  </body>
+</html>

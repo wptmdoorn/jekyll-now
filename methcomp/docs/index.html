@@ -1,0 +1,458 @@
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title>Welcome to methcomp’s documentation! &#8212; methcomp 1.0.0 documentation</title>
+    <link rel="stylesheet" href="_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    './',
+        VERSION:     '1.0.0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true,
+        SOURCELINK_SUFFIX: '.txt'
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+   
+  <link rel="stylesheet" href="_static/custom.css" type="text/css" />
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head>
+  <body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="section" id="module-methcomp.regression">
+<span id="welcome-to-methcomp-s-documentation"></span><h1>Welcome to methcomp’s documentation!<a class="headerlink" href="#module-methcomp.regression" title="Permalink to this headline">¶</a></h1>
+<dl class="function">
+<dt id="methcomp.regression.deming">
+<code class="descclassname">methcomp.regression.</code><code class="descname">deming</code><span class="sig-paren">(</span><em>method1</em>, <em>method2</em>, <em>vr=None</em>, <em>sdr=None</em>, <em>bootstrap=1000</em>, <em>x_label='Method 1'</em>, <em>y_label='Method 2'</em>, <em>title=None</em>, <em>CI=0.95</em>, <em>line_reference=True</em>, <em>line_CI=False</em>, <em>legend=True</em>, <em>color_points='#000000'</em>, <em>color_deming='#008bff'</em>, <em>square=False</em>, <em>ax=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/methcomp/regression.html#deming"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#methcomp.regression.deming" title="Permalink to this definition">¶</a></dt>
+<dd><p>Provide a method comparison using Deming regression.</p>
+<p>This is an Axis-level function which will draw the Passing-Bablok plot
+onto the current active Axis object unless <code class="docutils literal"><span class="pre">ax</span></code> is provided.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>method2</strong> (<em>method1</em><em>,</em>) – Values obtained from both methods, preferably provided in a np.array.</li>
+<li><strong>vr</strong> (<em>float</em>) – The assumed known ratio of the (residual) variance of the ys relative to that of the xs.
+Defaults to 1.</li>
+<li><strong>sdr</strong> (<em>float</em>) – The assumed known standard deviations. Parameter vr takes precedence if both are given.
+Defaults to 1.</li>
+<li><strong>bootstrap</strong> (<em>int</em><em> or </em><em>None</em>) – Amount of bootstrap estimates that should be performed to acquire standard errors (and confidence
+intervals). If None, no bootstrapping is performed. Defaults to 1000.</li>
+<li><strong>x_label</strong> (<em>str</em><em>, </em><em>optional</em>) – The label which is added to the X-axis. If None is provided, a standard
+label will be added.</li>
+<li><strong>y_label</strong> (<em>str</em><em>, </em><em>optional</em>) – The label which is added to the Y-axis. If None is provided, a standard
+label will be added.</li>
+<li><strong>title</strong> (<em>str</em><em>, </em><em>optional</em>) – Title of the Passing-Bablok plot. If None is provided, no title will be plotted.</li>
+<li><strong>CI</strong> (<em>float</em><em>, </em><em>optional</em>) – The confidence interval employed in the mean difference and limit of agreement
+lines. Defaults to 0.95.</li>
+<li><strong>line_reference</strong> (<em>bool</em><em>, </em><em>optional</em>) – If True, a grey reference line at y=x will be plotted in the plot.
+Defaults to true.</li>
+<li><strong>line_CI</strong> (<em>bool</em><em>, </em><em>optional</em>) – If True, dashed lines will be plotted at the boundaries of the confidence intervals.
+Defaults to false.</li>
+<li><strong>legend</strong> (<em>bool</em><em>, </em><em>optional</em>) – If True, will provide a legend containing the computed Passing-Bablok equation.
+Defaults to true.</li>
+<li><strong>color_points</strong> (<em>str</em><em>, </em><em>optional</em>) – Color of the individual differences that will be plotted.
+Color should be provided in format compatible with matplotlib.</li>
+<li><strong>color_deming</strong> (<em>str</em><em>, </em><em>optional</em>) – Color of the mean difference line that will be plotted.
+Color should be provided in format compatible with matplotlib.</li>
+<li><strong>square</strong> (<em>bool</em><em>, </em><em>optional</em>) – If True, set the Axes aspect to “equal” so each cell will be
+square-shaped.</li>
+<li><strong>ax</strong> (<em>matplotlib Axes</em><em>, </em><em>optional</em>) – Axes in which to draw the plot, otherwise use the currently-active
+Axes.</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first"><strong>ax</strong> – Axes object with the Bland-Altman plot.</p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last">matplotlib Axes</p>
+</td>
+</tr>
+</tbody>
+</table>
+<div class="admonition seealso">
+<p class="first admonition-title">See also</p>
+<p class="last"><code class="xref py py-func docutils literal"><span class="pre">Koopmans()</span></code>, <code class="xref py py-func docutils literal"><span class="pre">T.()</span></code>, <code class="xref py py-func docutils literal"><span class="pre">Haarlem()</span></code>, <code class="xref py py-func docutils literal"><span class="pre">Netherlands.()</span></code>, <code class="xref py py-func docutils literal"><span class="pre">Deming()</span></code>, <code class="xref py py-func docutils literal"><span class="pre">W.()</span></code>, <code class="xref py py-func docutils literal"><span class="pre">NY()</span></code>, <code class="xref py py-func docutils literal"><span class="pre">1985()</span></code></p>
+</div>
+</dd></dl>
+
+<dl class="function">
+<dt id="methcomp.regression.passingbablok">
+<code class="descclassname">methcomp.regression.</code><code class="descname">passingbablok</code><span class="sig-paren">(</span><em>method1</em>, <em>method2</em>, <em>x_label='Method 1'</em>, <em>y_label='Method 2'</em>, <em>title=None</em>, <em>CI=0.95</em>, <em>line_reference=True</em>, <em>line_CI=False</em>, <em>legend=True</em>, <em>color_points='#000000'</em>, <em>color_paba='#008bff'</em>, <em>square=False</em>, <em>ax=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/methcomp/regression.html#passingbablok"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#methcomp.regression.passingbablok" title="Permalink to this definition">¶</a></dt>
+<dd><p>Provide a method comparison using Passing-Bablok regression.</p>
+<p>This is an Axis-level function which will draw the Passing-Bablok plot
+onto the current active Axis object unless <code class="docutils literal"><span class="pre">ax</span></code> is provided.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>method2</strong> (<em>method1</em><em>,</em>) – Values obtained from both methods, preferably provided in a np.array.</li>
+<li><strong>x_label</strong> (<em>str</em><em>, </em><em>optional</em>) – The label which is added to the X-axis. If None is provided, a standard
+label will be added.</li>
+<li><strong>y_label</strong> (<em>str</em><em>, </em><em>optional</em>) – The label which is added to the Y-axis. If None is provided, a standard
+label will be added.</li>
+<li><strong>title</strong> (<em>str</em><em>, </em><em>optional</em>) – Title of the Passing-Bablok plot. If None is provided, no title will be plotted.</li>
+<li><strong>CI</strong> (<em>float</em><em>, </em><em>optional</em>) – The confidence interval employed in the mean difference and limit of agreement
+lines. Defaults to 0.95.</li>
+<li><strong>line_reference</strong> (<em>bool</em><em>, </em><em>optional</em>) – If True, a grey reference line at y=x will be plotted in the plot.
+Defaults to true.</li>
+<li><strong>line_CI</strong> (<em>bool</em><em>, </em><em>optional</em>) – If True, dashed lines will be plotted at the boundaries of the confidence intervals.
+Defaults to false.</li>
+<li><strong>legend</strong> (<em>bool</em><em>, </em><em>optional</em>) – If True, will provide a legend containing the computed Passing-Bablok equation.
+Defaults to true.</li>
+<li><strong>color_points</strong> (<em>str</em><em>, </em><em>optional</em>) – Color of the individual differences that will be plotted.
+Color should be provided in format compatible with matplotlib.</li>
+<li><strong>color_paba</strong> (<em>str</em><em>, </em><em>optional</em>) – Color of the mean difference line that will be plotted.
+Color should be provided in format compatible with matplotlib.</li>
+<li><strong>square</strong> (<em>bool</em><em>, </em><em>optional</em>) – If True, set the Axes aspect to “equal” so each cell will be
+square-shaped.</li>
+<li><strong>ax</strong> (<em>matplotlib Axes</em><em>, </em><em>optional</em>) – Axes in which to draw the plot, otherwise use the currently-active
+Axes.</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first"><strong>ax</strong> – Axes object with the Bland-Altman plot.</p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last">matplotlib Axes</p>
+</td>
+</tr>
+</tbody>
+</table>
+<div class="admonition seealso">
+<p class="first admonition-title">See also</p>
+<p class="last"><code class="xref py py-func docutils literal"><span class="pre">Passing()</span></code>, <code class="xref py py-func docutils literal"><span class="pre">vol.()</span></code>, <code class="xref py py-func docutils literal"><span class="pre">no.()</span></code>, <code class="xref py py-func docutils literal"><span class="pre">1983()</span></code>, <code class="xref py py-func docutils literal"><span class="pre">pp.()</span></code></p>
+</div>
+</dd></dl>
+
+<dl class="function">
+<dt id="methcomp.regression.linear">
+<code class="descclassname">methcomp.regression.</code><code class="descname">linear</code><span class="sig-paren">(</span><em>method1</em>, <em>method2</em>, <em>x_label='Method 1'</em>, <em>y_label='Method 2'</em>, <em>title=None</em>, <em>CI=0.95</em>, <em>line_reference=True</em>, <em>line_CI=False</em>, <em>legend=True</em>, <em>color_points='#000000'</em>, <em>color_paba='#008bff'</em>, <em>square=False</em>, <em>ax=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/methcomp/regression.html#linear"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#methcomp.regression.linear" title="Permalink to this definition">¶</a></dt>
+<dd><p>Provide a method comparison using simple, linear regression.</p>
+<p>This is an Axis-level function which will draw the linear regression plot
+onto the current active Axis object unless <code class="docutils literal"><span class="pre">ax</span></code> is provided.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>method2</strong> (<em>method1</em><em>,</em>) – Values obtained from both methods, preferably provided in a np.array.</li>
+<li><strong>x_label</strong> (<em>str</em><em>, </em><em>optional</em>) – The label which is added to the X-axis. If None is provided, a standard
+label will be added.</li>
+<li><strong>y_label</strong> (<em>str</em><em>, </em><em>optional</em>) – The label which is added to the Y-axis. If None is provided, a standard
+label will be added.</li>
+<li><strong>title</strong> (<em>str</em><em>, </em><em>optional</em>) – Title of the linear regression plot. If None is provided, no title will be plotted.</li>
+<li><strong>CI</strong> (<em>float</em><em>, </em><em>optional</em>) – The confidence interval employed in the mean difference and limit of agreement
+lines. Defaults to 0.95.</li>
+<li><strong>line_reference</strong> (<em>bool</em><em>, </em><em>optional</em>) – If True, a grey reference line at y=x will be plotted in the plot.
+Defaults to true.</li>
+<li><strong>line_CI</strong> (<em>bool</em><em>, </em><em>optional</em>) – If True, dashed lines will be plotted at the boundaries of the confidence intervals.
+Defaults to false.</li>
+<li><strong>legend</strong> (<em>bool</em><em>, </em><em>optional</em>) – If True, will provide a legend containing the computed Linear regression equation.
+Defaults to true.</li>
+<li><strong>color_points</strong> (<em>str</em><em>, </em><em>optional</em>) – Color of the individual differences that will be plotted.
+Color should be provided in format compatible with matplotlib.</li>
+<li><strong>color_paba</strong> (<em>str</em><em>, </em><em>optional</em>) – Color of the mean difference line that will be plotted.
+Color should be provided in format compatible with matplotlib.</li>
+<li><strong>square</strong> (<em>bool</em><em>, </em><em>optional</em>) – If True, set the Axes aspect to “equal” so each cell will be
+square-shaped.</li>
+<li><strong>ax</strong> (<em>matplotlib Axes</em><em>, </em><em>optional</em>) – Axes in which to draw the plot, otherwise use the currently-active
+Axes.</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first"><strong>ax</strong> – Axes object with the Bland-Altman plot.</p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last">matplotlib Axes</p>
+</td>
+</tr>
+</tbody>
+</table>
+<div class="admonition seealso">
+<p class="first admonition-title">See also</p>
+<p class="last"><code class="xref py py-func docutils literal"><span class="pre">()</span></code></p>
+</div>
+</dd></dl>
+
+<span class="target" id="module-methcomp.blandaltman"></span><dl class="function">
+<dt id="methcomp.blandaltman.blandaltman">
+<code class="descclassname">methcomp.blandaltman.</code><code class="descname">blandaltman</code><span class="sig-paren">(</span><em>method1</em>, <em>method2</em>, <em>x_label='Mean of methods'</em>, <em>y_label='Difference between methods'</em>, <em>title=None</em>, <em>diff='absolute'</em>, <em>limit_of_agreement=1.96</em>, <em>reference=False</em>, <em>CI=0.95</em>, <em>xlim=None</em>, <em>ylim=None</em>, <em>color_mean='#008bff'</em>, <em>color_loa='#FF7000'</em>, <em>color_points='#000000'</em>, <em>ax=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/methcomp/blandaltman.html#blandaltman"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#methcomp.blandaltman.blandaltman" title="Permalink to this definition">¶</a></dt>
+<dd><p>Provide a method comparison using Bland-Altman plotting.</p>
+<p>This is an Axis-level function which will draw the Bland-Altman plot
+onto the current active Axis object unless <code class="docutils literal"><span class="pre">ax</span></code> is provided.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>method2</strong> (<em>method1</em><em>,</em>) – Values obtained from both methods, preferably provided in a np.array.</li>
+<li><strong>x_label</strong> (<em>str</em><em>, </em><em>optional</em>) – The label which is added to the X-axis. If None is provided, a standard
+label will be added.</li>
+<li><strong>y_label</strong> (<em>str</em><em>, </em><em>optional</em>) – The label which is added to the Y-axis. If None is provided, a standard
+label will be added.</li>
+<li><strong>title</strong> (<em>str</em><em>, </em><em>optional</em>) – Title of the Bland-Altman plot. If None is provided, no title will be plotted.</li>
+<li><strong>diff</strong> (<em>&quot;absolute&quot;</em><em>  or </em><em>&quot;percentage&quot;</em>) – The difference to display, whether it is an absolute one or a percentual one.
+If None is provided, it defaults to absolute.</li>
+<li><strong>limit_of_agreement</strong> (<em>float</em><em>, </em><em>optional</em>) – Multiples of the standard deviation to plot the limit of afgreement bounds at.
+This defaults to 1.96.</li>
+<li><strong>reference</strong> (<em>bool</em><em>, </em><em>optional</em>) – If True, a grey reference line at y=0 will be plotted in the Bland-Altman.</li>
+<li><strong>CI</strong> (<em>float</em><em>, </em><em>optional</em>) – The confidence interval employed in the mean difference and limit of agreement
+lines. Defaults to 0.95.</li>
+<li><strong>xlim</strong> (<em>list</em><em>, </em><em>optional</em>) – Minimum and maximum limits for X-axis. Should be provided as list or tuple.
+If not set, matplotlib will decide its own bounds.</li>
+<li><strong>ylim</strong> (<em>list</em><em>, </em><em>optional</em>) – Minimum and maximum limits for Y-axis. Should be provided as list or tuple.
+If not set, matplotlib will decide its own bounds.</li>
+<li><strong>color_mean</strong> (<em>str</em><em>, </em><em>optional</em>) – Color of the mean difference line that will be plotted.</li>
+<li><strong>color_loa</strong> (<em>str</em><em>, </em><em>optional</em>) – Color of the limit of agreement lines that will be plotted.</li>
+<li><strong>color_points</strong> (<em>str</em><em>, </em><em>optional</em>) – Color of the individual differences that will be plotted.</li>
+<li><strong>ax</strong> (<em>matplotlib Axes</em><em>, </em><em>optional</em>) – Axes in which to draw the plot, otherwise use the currently-active
+Axes.</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first"><strong>ax</strong> – Axes object with the Bland-Altman plot.</p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last">matplotlib Axes</p>
+</td>
+</tr>
+</tbody>
+</table>
+<div class="admonition seealso">
+<p class="first admonition-title">See also</p>
+<p class="last"><code class="xref py py-func docutils literal"><span class="pre">pyCompare()</span></code>, <code class="xref py py-func docutils literal"><span class="pre">Altman()</span></code>, <code class="xref py py-func docutils literal"><span class="pre">D.()</span></code>, <code class="xref py py-func docutils literal"><span class="pre">and()</span></code>, <code class="xref py py-func docutils literal"><span class="pre">J.()</span></code>, <code class="xref py py-func docutils literal"><span class="pre">vol.()</span></code>, <code class="xref py py-func docutils literal"><span class="pre">no.()</span></code>, <code class="xref py py-func docutils literal"><span class="pre">1983()</span></code>, <code class="xref py py-func docutils literal"><span class="pre">pp.()</span></code>, <code class="xref py py-func docutils literal"><span class="pre">Altman()</span></code>, <code class="xref py py-func docutils literal"><span class="pre">D.()</span></code>, <code class="xref py py-func docutils literal"><span class="pre">and()</span></code>, <code class="xref py py-func docutils literal"><span class="pre">J.()</span></code>, <code class="xref py py-func docutils literal"><span class="pre">vol.()</span></code>, <code class="xref py py-func docutils literal"><span class="pre">no.()</span></code>, <code class="xref py py-func docutils literal"><span class="pre">1999()</span></code>, <code class="xref py py-func docutils literal"><span class="pre">pp.()</span></code></p>
+</div>
+</dd></dl>
+
+<span class="target" id="module-methcomp.glucose"></span><dl class="function">
+<dt id="methcomp.glucose.clarke">
+<code class="descclassname">methcomp.glucose.</code><code class="descname">clarke</code><span class="sig-paren">(</span><em>reference</em>, <em>test</em>, <em>units</em>, <em>x_label=None</em>, <em>y_label=None</em>, <em>title=None</em>, <em>xlim=None</em>, <em>ylim=None</em>, <em>color_grid='#000000'</em>, <em>color_gridlabels='auto'</em>, <em>color_points='auto'</em>, <em>grid=True</em>, <em>percentage=False</em>, <em>square=False</em>, <em>ax=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/methcomp/glucose.html#clarke"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#methcomp.glucose.clarke" title="Permalink to this definition">¶</a></dt>
+<dd><p>Provide a glucose error grid analyses as designed by Clarke.</p>
+<p>This is an Axis-level function which will draw the Clarke-error grid plot.
+onto the current active Axis object unless <code class="docutils literal"><span class="pre">ax</span></code> is provided.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>test</strong> (<em>reference</em><em>,</em>) – Glucose values obtained from the reference and predicted methods, preferably provided in a np.array.</li>
+<li><strong>units</strong> (<em>str</em>) – The SI units which the glucose values are provided in. Options: ‘mmol’, ‘mgdl’ or ‘mg/dl’.</li>
+<li><strong>x_label</strong> (<em>str</em><em>, </em><em>optional</em>) – The label which is added to the X-axis. If None is provided, a standard
+label will be added.</li>
+<li><strong>y_label</strong> (<em>str</em><em>, </em><em>optional</em>) – The label which is added to the Y-axis. If None is provided, a standard
+label will be added.</li>
+<li><strong>title</strong> (<em>str</em><em>, </em><em>optional</em>) – Title of the Clarke error grid plot. If None is provided, no title will be plotted.</li>
+<li><strong>xlim</strong> (<em>list</em><em>, </em><em>optional</em>) – Minimum and maximum limits for X-axis. Should be provided as list or tuple.
+If not set, matplotlib will decide its own bounds.</li>
+<li><strong>ylim</strong> (<em>list</em><em>, </em><em>optional</em>) – Minimum and maximum limits for Y-axis. Should be provided as list or tuple.
+If not set, matplotlib will decide its own bounds.</li>
+<li><strong>color_grid</strong> (<em>str</em><em>, </em><em>optional</em>) – Color of the Clarke error grid lines.</li>
+<li><strong>color_gridlabels</strong> (<em>str</em><em>, </em><em>optional</em>) – Color of the gridlabels (A, B, C, ..) that will be plotted. If set to ‘auto’,
+it will plot the points according to their zones.</li>
+<li><strong>color_points</strong> (<em>str</em><em>, </em><em>optional</em>) – Color of the individual differences that will be plotted. If set to ‘auto’,
+it will plot the points according to their zones.</li>
+<li><strong>grid</strong> (<em>bool</em><em>, </em><em>optional</em>) – Enable the grid lines of the Parkes error. Defaults to True.</li>
+<li><strong>percentage</strong> (<em>bool</em><em>, </em><em>optional</em>) – If True, percentage of the zones will be depicted in the plot.</li>
+<li><strong>square</strong> (<em>bool</em><em>, </em><em>optional</em>) – If True, set the Axes aspect to “equal” so each cell will be square-shaped.</li>
+<li><strong>ax</strong> (<em>matplotlib Axes</em><em>, </em><em>optional</em>) – Axes in which to draw the plot, otherwise use the currently-active
+Axes.</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first"><strong>ax</strong> – Axes object with the Clarke-error grid plot.</p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last">matplotlib Axes</p>
+</td>
+</tr>
+</tbody>
+</table>
+<div class="admonition seealso">
+<p class="first admonition-title">See also</p>
+<p class="last"><code class="xref py py-func docutils literal"><span class="pre">Clarke()</span></code>, <code class="xref py py-func docutils literal"><span class="pre">W.()</span></code>, <code class="xref py py-func docutils literal"><span class="pre">Cox()</span></code>, <code class="xref py py-func docutils literal"><span class="pre">D.()</span></code>, <code class="xref py py-func docutils literal"><span class="pre">et()</span></code>, <code class="xref py py-func docutils literal"><span class="pre">vol.()</span></code>, <code class="xref py py-func docutils literal"><span class="pre">no.()</span></code>, <code class="xref py py-func docutils literal"><span class="pre">1987()</span></code>, <code class="xref py py-func docutils literal"><span class="pre">pp.()</span></code></p>
+</div>
+</dd></dl>
+
+<dl class="function">
+<dt id="methcomp.glucose.parkes">
+<code class="descclassname">methcomp.glucose.</code><code class="descname">parkes</code><span class="sig-paren">(</span><em>type</em>, <em>reference</em>, <em>test</em>, <em>units</em>, <em>x_label=None</em>, <em>y_label=None</em>, <em>title=None</em>, <em>xlim=None</em>, <em>ylim=None</em>, <em>color_grid='#000000'</em>, <em>color_gridlabels='auto'</em>, <em>color_points='auto'</em>, <em>grid=True</em>, <em>percentage=False</em>, <em>square=False</em>, <em>ax=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/methcomp/glucose.html#parkes"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#methcomp.glucose.parkes" title="Permalink to this definition">¶</a></dt>
+<dd><p>Provide a glucose error grid analyses as designed by Parkes.</p>
+<p>This is an Axis-level function which will draw the Parke-error grid plot.
+onto the current active Axis object unless <code class="docutils literal"><span class="pre">ax</span></code> is provided.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>type</strong> (<em>int</em>) – Parkes error grid differ for each type of diabetes. This should be either 1 or 2 corresponding
+to the type of diabetes.</li>
+<li><strong>test</strong> (<em>reference</em><em>,</em>) – Glucose values obtained from the reference and predicted methods, preferably provided in a np.array.</li>
+<li><strong>units</strong> (<em>str</em>) – The SI units which the glucose values are provided in. Options: ‘mmol’, ‘mgdl’ or ‘mg/dl’.</li>
+<li><strong>x_label</strong> (<em>str</em><em>, </em><em>optional</em>) – The label which is added to the X-axis. If None is provided, a standard
+label will be added.</li>
+<li><strong>y_label</strong> (<em>str</em><em>, </em><em>optional</em>) – The label which is added to the Y-axis. If None is provided, a standard
+label will be added.</li>
+<li><strong>title</strong> (<em>str</em><em>, </em><em>optional</em>) – Title of the Parkes-error grid plot. If None is provided, no title will be plotted.</li>
+<li><strong>xlim</strong> (<em>list</em><em>, </em><em>optional</em>) – Minimum and maximum limits for X-axis. Should be provided as list or tuple.
+If not set, matplotlib will decide its own bounds.</li>
+<li><strong>ylim</strong> (<em>list</em><em>, </em><em>optional</em>) – Minimum and maximum limits for Y-axis. Should be provided as list or tuple.
+If not set, matplotlib will decide its own bounds.</li>
+<li><strong>color_grid</strong> (<em>str</em><em>, </em><em>optional</em>) – Color of the Clarke error grid lines. Defaults to #000000 which represents the black color.</li>
+<li><strong>color_gridlabels</strong> (<em>str</em><em>, </em><em>optional</em>) – Color of the grid labels (A, B, C, ..) that will be plotted. Defaults to ‘auto’ which colors
+the points according to their relative zones.</li>
+<li><strong>color_points</strong> (<em>str</em><em>, </em><em>optional</em>) – Color of the individual differences that will be plotted. Defaults to ‘auto’ which colors
+the points according to their relative zones.</li>
+<li><strong>grid</strong> (<em>bool</em><em>, </em><em>optional</em>) – Enable the grid lines of the Parkes error. Defaults to True.</li>
+<li><strong>percentage</strong> (<em>bool</em><em>, </em><em>optional</em>) – If True, percentage of the zones will be depicted in the plot.</li>
+<li><strong>square</strong> (<em>bool</em><em>, </em><em>optional</em>) – If True, set the Axes aspect to “equal” so each cell will be square-shaped.</li>
+<li><strong>ax</strong> (<em>matplotlib Axes</em><em>, </em><em>optional</em>) – Axes in which to draw the plot, otherwise use the currently-active
+Axes.</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first"><strong>ax</strong> – Axes object with the Parkes error grid plot.</p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last">matplotlib Axes</p>
+</td>
+</tr>
+</tbody>
+</table>
+<div class="admonition seealso">
+<p class="first admonition-title">See also</p>
+<p class="last"><code class="xref py py-func docutils literal"><span class="pre">Parkes()</span></code>, <code class="xref py py-func docutils literal"><span class="pre">J.()</span></code>, <code class="xref py py-func docutils literal"><span class="pre">Slatin()</span></code>, <code class="xref py py-func docutils literal"><span class="pre">vol.()</span></code>, <code class="xref py py-func docutils literal"><span class="pre">no.()</span></code>, <code class="xref py py-func docutils literal"><span class="pre">2000()</span></code>, <code class="xref py py-func docutils literal"><span class="pre">pp.()</span></code>, <code class="xref py py-func docutils literal"><span class="pre">Pfutzner()</span></code>, <code class="xref py py-func docutils literal"><span class="pre">A.()</span></code>, <code class="xref py py-func docutils literal"><span class="pre">Klonoff()</span></code>, <code class="xref py py-func docutils literal"><span class="pre">et()</span></code>, <code class="xref py py-func docutils literal"><span class="pre">vol.()</span></code>, <code class="xref py py-func docutils literal"><span class="pre">no.()</span></code>, <code class="xref py py-func docutils literal"><span class="pre">2013()</span></code>, <code class="xref py py-func docutils literal"><span class="pre">pp.()</span></code></p>
+</div>
+</dd></dl>
+
+<dl class="function">
+<dt id="methcomp.glucose.clarkezones">
+<code class="descclassname">methcomp.glucose.</code><code class="descname">clarkezones</code><span class="sig-paren">(</span><em>reference</em>, <em>test</em>, <em>units</em>, <em>numeric=False</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/methcomp/glucose.html#clarkezones"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#methcomp.glucose.clarkezones" title="Permalink to this definition">¶</a></dt>
+<dd><p>Provides the error zones as depicted by the
+Clarke error grid analysis for each point in the reference and test datasets.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>test</strong> (<em>reference</em><em>,</em>) – Glucose values obtained from the reference and predicted methods, preferably provided in a np.array.</li>
+<li><strong>units</strong> (<em>str</em>) – The SI units which the glucose values are provided in. Options: ‘mmol’, ‘mgdl’ or ‘mg/dl’.</li>
+<li><strong>numeric</strong> (<em>bool</em><em>, </em><em>optional</em>) – If this is set to true, returns integers (0 to 4) instead of characters for each of the
+zones.</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first"><strong>clarkezones</strong> – Returns a list depecting the zones for each of the reference and test values.</p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last">list</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="methcomp.glucose.parkeszones">
+<code class="descclassname">methcomp.glucose.</code><code class="descname">parkeszones</code><span class="sig-paren">(</span><em>type</em>, <em>reference</em>, <em>test</em>, <em>units</em>, <em>numeric=False</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/methcomp/glucose.html#parkeszones"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#methcomp.glucose.parkeszones" title="Permalink to this definition">¶</a></dt>
+<dd><p>Provides the error zones as depicted by the
+Parkes error grid analysis for each point in the reference and test datasets.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>type</strong> (<em>int</em>) – Parkes error grid differ for each type of diabetes. This should be either 1 or 2 corresponding
+to the type of diabetes.</li>
+<li><strong>test</strong> (<em>reference</em><em>,</em>) – Glucose values obtained from the reference and predicted methods, preferably provided in a np.array.</li>
+<li><strong>units</strong> (<em>str</em>) – The SI units which the glucose values are provided in. Options: ‘mmol’, ‘mgdl’ or ‘mg/dl’.</li>
+<li><strong>numeric</strong> (<em>bool</em><em>, </em><em>optional</em>) – If this is set to true, returns integers (0 to 4) instead of characters for each of the
+zones.</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first"><strong>clarkezones</strong> – Returns a list depecting the zones for each of the reference and test values.</p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last">list</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<div class="toctree-wrapper compound">
+</div>
+</div>
+<div class="section" id="indices-and-tables">
+<h1>Indices and tables<a class="headerlink" href="#indices-and-tables" title="Permalink to this headline">¶</a></h1>
+<ul class="simple">
+<li><a class="reference internal" href="genindex.html"><span class="std std-ref">Index</span></a></li>
+<li><a class="reference internal" href="py-modindex.html"><span class="std std-ref">Module Index</span></a></li>
+<li><a class="reference internal" href="search.html"><span class="std std-ref">Search Page</span></a></li>
+</ul>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper"><div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="#">Documentation overview</a><ul>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="search.html" method="get">
+      <div><input type="text" name="q" /></div>
+      <div><input type="submit" value="Go" /></div>
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2019, William P.T.M. van Doorn.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.6.7</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.8</a>
+      
+      |
+      <a href="_sources/index.rst.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+
+    
+  </body>
+</html>

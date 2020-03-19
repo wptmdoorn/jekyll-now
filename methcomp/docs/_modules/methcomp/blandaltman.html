@@ -1,0 +1,285 @@
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title>methcomp.blandaltman &#8212; methcomp 1.0.0 documentation</title>
+    <link rel="stylesheet" href="../../_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../',
+        VERSION:     '1.0.0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true,
+        SOURCELINK_SUFFIX: '.txt'
+      };
+    </script>
+    <script type="text/javascript" src="../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../_static/doctools.js"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" />
+   
+  <link rel="stylesheet" href="../../_static/custom.css" type="text/css" />
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head>
+  <body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <h1>Source code for methcomp.blandaltman</h1><div class="highlight"><pre>
+<span></span><span class="kn">import</span> <span class="nn">matplotlib.pyplot</span> <span class="k">as</span> <span class="nn">plt</span>
+<span class="kn">import</span> <span class="nn">matplotlib</span>
+<span class="kn">import</span> <span class="nn">matplotlib.transforms</span> <span class="k">as</span> <span class="nn">transforms</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">from</span> <span class="nn">scipy</span> <span class="kn">import</span> <span class="n">stats</span>
+
+<span class="n">__all__</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;blandaltman&quot;</span><span class="p">]</span>
+
+
+<span class="k">class</span> <span class="nc">_BlandAltman</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Internal class for drawing a Bland-Altman plot&quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">method1</span><span class="p">,</span> <span class="n">method2</span><span class="p">,</span>
+                 <span class="n">x_title</span><span class="p">,</span> <span class="n">y_title</span><span class="p">,</span> <span class="n">graph_title</span><span class="p">,</span>
+                 <span class="n">diff</span><span class="p">,</span> <span class="n">limit_of_agreement</span><span class="p">,</span> <span class="n">reference</span><span class="p">,</span> <span class="n">CI</span><span class="p">,</span>
+                 <span class="n">xlim</span><span class="p">,</span> <span class="n">ylim</span><span class="p">,</span>
+                 <span class="n">color_mean</span><span class="p">,</span> <span class="n">color_loa</span><span class="p">,</span> <span class="n">color_points</span><span class="p">):</span>
+        <span class="c1"># variables assignment</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">method1</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">method1</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">method2</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">method2</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">diff_method</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="n">diff</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">graph_title</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="n">graph_title</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">x_title</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="n">x_title</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">y_title</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="n">y_title</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">loa</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="n">limit_of_agreement</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">reference</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="n">reference</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">CI</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="n">CI</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">xlim</span><span class="p">:</span> <span class="nb">list</span> <span class="o">=</span> <span class="n">xlim</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">ylim</span><span class="p">:</span> <span class="nb">list</span> <span class="o">=</span> <span class="n">ylim</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">color_mean</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="n">color_mean</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">color_loa</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="n">color_loa</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">color_points</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="n">color_points</span>
+
+        <span class="c1"># check provided parameters</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_check_params</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_derive_params</span><span class="p">()</span>
+
+    <span class="k">def</span> <span class="nf">_derive_params</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="c1"># perform necessary calculations and processing</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">n</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">method1</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">mean</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">([</span><span class="bp">self</span><span class="o">.</span><span class="n">method1</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">method1</span><span class="p">],</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">diff_method</span> <span class="o">==</span> <span class="s1">&#39;absolute&#39;</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">diff</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">method1</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">method2</span>
+        <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">diff_method</span> <span class="o">==</span> <span class="s1">&#39;percentage&#39;</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">diff</span> <span class="o">=</span> <span class="p">((</span><span class="bp">self</span><span class="o">.</span><span class="n">method1</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">method2</span><span class="p">)</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">mean</span><span class="p">)</span> <span class="o">*</span> <span class="mi">100</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">diff</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">method1</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">method2</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">mean_diff</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">diff</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">sd_diff</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">std</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">diff</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">loa_sd</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">loa</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">sd_diff</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">CI</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">CI_mean</span> <span class="o">=</span> <span class="n">stats</span><span class="o">.</span><span class="n">norm</span><span class="o">.</span><span class="n">interval</span><span class="p">(</span><span class="n">alpha</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">CI</span><span class="p">,</span> <span class="n">loc</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">mean_diff</span><span class="p">,</span>
+                                               <span class="n">scale</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">sd_diff</span> <span class="o">/</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">n</span><span class="p">))</span>
+            <span class="n">se_loa</span> <span class="o">=</span> <span class="p">(</span><span class="mf">1.71</span> <span class="o">**</span> <span class="mi">2</span><span class="p">)</span> <span class="o">*</span> <span class="p">((</span><span class="bp">self</span><span class="o">.</span><span class="n">sd_diff</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">n</span><span class="p">)</span>
+            <span class="n">conf_loa</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">se_loa</span><span class="p">)</span> <span class="o">*</span> <span class="n">stats</span><span class="o">.</span><span class="n">t</span><span class="o">.</span><span class="n">ppf</span><span class="p">(</span><span class="n">q</span><span class="o">=</span><span class="p">(</span><span class="mi">1</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">CI</span><span class="p">)</span> <span class="o">/</span> <span class="mf">2.</span><span class="p">,</span> <span class="n">df</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">n</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">CI_upper</span> <span class="o">=</span> <span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">mean_diff</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">loa_sd</span> <span class="o">+</span> <span class="n">conf_loa</span><span class="p">,</span>
+                             <span class="bp">self</span><span class="o">.</span><span class="n">mean_diff</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">loa_sd</span> <span class="o">-</span> <span class="n">conf_loa</span><span class="p">]</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">CI_lower</span> <span class="o">=</span> <span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">mean_diff</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">loa_sd</span> <span class="o">+</span> <span class="n">conf_loa</span><span class="p">,</span>
+                             <span class="bp">self</span><span class="o">.</span><span class="n">mean_diff</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">loa_sd</span> <span class="o">-</span> <span class="n">conf_loa</span><span class="p">]</span>
+
+    <span class="k">def</span> <span class="nf">_check_params</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">method1</span><span class="p">)</span> <span class="o">!=</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">method2</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;Length of method 1 and method 2 are not equal.&#39;</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">CI</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">CI</span> <span class="o">&gt;</span> <span class="mi">1</span> <span class="ow">or</span> <span class="bp">self</span><span class="o">.</span><span class="n">CI</span> <span class="o">&lt;</span> <span class="mi">0</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;Confidence interval must be between 0 and 1.&#39;</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">diff_method</span> <span class="ow">not</span> <span class="ow">in</span> <span class="p">[</span><span class="s1">&#39;absolute&#39;</span><span class="p">,</span> <span class="s1">&#39;percentage&#39;</span><span class="p">]:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;The provided difference method must be either absolute or percentage.&#39;</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="nb">any</span><span class="p">([</span><span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="nb">str</span><span class="p">)</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">x_title</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">y_title</span><span class="p">]]):</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;Axes labels arguments should be provided as a str.&#39;</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">plot</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ax</span><span class="p">:</span> <span class="n">matplotlib</span><span class="o">.</span><span class="n">axes</span><span class="o">.</span><span class="n">Axes</span><span class="p">):</span>
+        <span class="c1"># individual points</span>
+        <span class="n">ax</span><span class="o">.</span><span class="n">scatter</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">mean</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">diff</span><span class="p">,</span> <span class="n">s</span><span class="o">=</span><span class="mi">20</span><span class="p">,</span> <span class="n">alpha</span><span class="o">=</span><span class="mf">0.6</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">color_points</span><span class="p">)</span>
+
+        <span class="c1"># mean difference and SD lines</span>
+        <span class="n">ax</span><span class="o">.</span><span class="n">axhline</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">mean_diff</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">color_mean</span><span class="p">,</span> <span class="n">linestyle</span><span class="o">=</span><span class="s1">&#39;-&#39;</span><span class="p">)</span>
+        <span class="n">ax</span><span class="o">.</span><span class="n">axhline</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">mean_diff</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">loa_sd</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">color_loa</span><span class="p">,</span> <span class="n">linestyle</span><span class="o">=</span><span class="s1">&#39;--&#39;</span><span class="p">)</span>
+        <span class="n">ax</span><span class="o">.</span><span class="n">axhline</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">mean_diff</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">loa_sd</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">color_loa</span><span class="p">,</span> <span class="n">linestyle</span><span class="o">=</span><span class="s1">&#39;--&#39;</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">reference</span><span class="p">:</span>
+            <span class="n">ax</span><span class="o">.</span><span class="n">axhline</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s1">&#39;grey&#39;</span><span class="p">,</span> <span class="n">linestyle</span><span class="o">=</span><span class="s1">&#39;-&#39;</span><span class="p">,</span> <span class="n">alpha</span><span class="o">=</span><span class="mf">0.4</span><span class="p">)</span>
+
+        <span class="c1"># confidence intervals (if requested)</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">CI</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">ax</span><span class="o">.</span><span class="n">axhspan</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">CI_mean</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span>  <span class="bp">self</span><span class="o">.</span><span class="n">CI_mean</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">color</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">color_mean</span><span class="p">,</span> <span class="n">alpha</span><span class="o">=</span><span class="mf">0.2</span><span class="p">)</span>
+            <span class="n">ax</span><span class="o">.</span><span class="n">axhspan</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">CI_upper</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="bp">self</span><span class="o">.</span><span class="n">CI_upper</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">color</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">color_loa</span><span class="p">,</span> <span class="n">alpha</span><span class="o">=</span><span class="mf">0.2</span><span class="p">)</span>
+            <span class="n">ax</span><span class="o">.</span><span class="n">axhspan</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">CI_lower</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="bp">self</span><span class="o">.</span><span class="n">CI_lower</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">color</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">color_loa</span><span class="p">,</span> <span class="n">alpha</span><span class="o">=</span><span class="mf">0.2</span><span class="p">)</span>
+
+        <span class="c1"># text in graph</span>
+        <span class="n">trans</span><span class="p">:</span> <span class="n">matplotlib</span><span class="o">.</span><span class="n">transform</span> <span class="o">=</span> <span class="n">transforms</span><span class="o">.</span><span class="n">blended_transform_factory</span><span class="p">(</span>
+            <span class="n">ax</span><span class="o">.</span><span class="n">transAxes</span><span class="p">,</span> <span class="n">ax</span><span class="o">.</span><span class="n">transData</span><span class="p">)</span>
+        <span class="n">offset</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="p">(((</span><span class="bp">self</span><span class="o">.</span><span class="n">loa</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">sd_diff</span><span class="p">)</span> <span class="o">*</span> <span class="mi">2</span><span class="p">)</span> <span class="o">/</span> <span class="mi">100</span><span class="p">)</span> <span class="o">*</span> <span class="mf">1.2</span>
+        <span class="n">ax</span><span class="o">.</span><span class="n">text</span><span class="p">(</span><span class="mf">0.98</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">mean_diff</span> <span class="o">+</span> <span class="n">offset</span><span class="p">,</span> <span class="s1">&#39;Mean&#39;</span><span class="p">,</span> <span class="n">ha</span><span class="o">=</span><span class="s2">&quot;right&quot;</span><span class="p">,</span> <span class="n">va</span><span class="o">=</span><span class="s2">&quot;bottom&quot;</span><span class="p">,</span> <span class="n">transform</span><span class="o">=</span><span class="n">trans</span><span class="p">)</span>
+        <span class="n">ax</span><span class="o">.</span><span class="n">text</span><span class="p">(</span><span class="mf">0.98</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">mean_diff</span> <span class="o">-</span> <span class="n">offset</span><span class="p">,</span> <span class="sa">f</span><span class="s1">&#39;</span><span class="si">{self.mean_diff:.2f}</span><span class="s1">&#39;</span><span class="p">,</span> <span class="n">ha</span><span class="o">=</span><span class="s2">&quot;right&quot;</span><span class="p">,</span> <span class="n">va</span><span class="o">=</span><span class="s2">&quot;top&quot;</span><span class="p">,</span> <span class="n">transform</span><span class="o">=</span><span class="n">trans</span><span class="p">)</span>
+        <span class="n">ax</span><span class="o">.</span><span class="n">text</span><span class="p">(</span><span class="mf">0.98</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">mean_diff</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">loa_sd</span> <span class="o">+</span> <span class="n">offset</span><span class="p">,</span>
+                <span class="sa">f</span><span class="s1">&#39;+</span><span class="si">{self.loa:.2f}</span><span class="s1"> SD&#39;</span><span class="p">,</span> <span class="n">ha</span><span class="o">=</span><span class="s2">&quot;right&quot;</span><span class="p">,</span> <span class="n">va</span><span class="o">=</span><span class="s2">&quot;bottom&quot;</span><span class="p">,</span> <span class="n">transform</span><span class="o">=</span><span class="n">trans</span><span class="p">)</span>
+        <span class="n">ax</span><span class="o">.</span><span class="n">text</span><span class="p">(</span><span class="mf">0.98</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">mean_diff</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">loa_sd</span> <span class="o">-</span> <span class="n">offset</span><span class="p">,</span>
+                <span class="sa">f</span><span class="s1">&#39;{self.mean_diff + self.loa_sd:.2f}&#39;</span><span class="p">,</span> <span class="n">ha</span><span class="o">=</span><span class="s2">&quot;right&quot;</span><span class="p">,</span> <span class="n">va</span><span class="o">=</span><span class="s2">&quot;top&quot;</span><span class="p">,</span> <span class="n">transform</span><span class="o">=</span><span class="n">trans</span><span class="p">)</span>
+        <span class="n">ax</span><span class="o">.</span><span class="n">text</span><span class="p">(</span><span class="mf">0.98</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">mean_diff</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">loa_sd</span> <span class="o">-</span> <span class="n">offset</span><span class="p">,</span>
+                <span class="sa">f</span><span class="s1">&#39;-</span><span class="si">{self.loa:.2f}</span><span class="s1"> SD&#39;</span><span class="p">,</span> <span class="n">ha</span><span class="o">=</span><span class="s2">&quot;right&quot;</span><span class="p">,</span> <span class="n">va</span><span class="o">=</span><span class="s2">&quot;top&quot;</span><span class="p">,</span> <span class="n">transform</span><span class="o">=</span><span class="n">trans</span><span class="p">)</span>
+        <span class="n">ax</span><span class="o">.</span><span class="n">text</span><span class="p">(</span><span class="mf">0.98</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">mean_diff</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">loa_sd</span> <span class="o">+</span> <span class="n">offset</span><span class="p">,</span>
+                <span class="sa">f</span><span class="s1">&#39;{self.mean_diff - self.loa_sd:.2f}&#39;</span><span class="p">,</span> <span class="n">ha</span><span class="o">=</span><span class="s2">&quot;right&quot;</span><span class="p">,</span> <span class="n">va</span><span class="o">=</span><span class="s2">&quot;bottom&quot;</span><span class="p">,</span> <span class="n">transform</span><span class="o">=</span><span class="n">trans</span><span class="p">)</span>
+
+        <span class="c1"># transform graphs</span>
+        <span class="n">ax</span><span class="o">.</span><span class="n">spines</span><span class="p">[</span><span class="s1">&#39;right&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">set_visible</span><span class="p">(</span><span class="kc">False</span><span class="p">)</span>
+        <span class="n">ax</span><span class="o">.</span><span class="n">spines</span><span class="p">[</span><span class="s1">&#39;top&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">set_visible</span><span class="p">(</span><span class="kc">False</span><span class="p">)</span>
+
+        <span class="c1"># set X and Y limits</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">xlim</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">ax</span><span class="o">.</span><span class="n">set_xlim</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">xlim</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="bp">self</span><span class="o">.</span><span class="n">xlim</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">ylim</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">ax</span><span class="o">.</span><span class="n">set_ylim</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">ylim</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="bp">self</span><span class="o">.</span><span class="n">ylim</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
+
+        <span class="c1"># graph labels</span>
+        <span class="n">ax</span><span class="o">.</span><span class="n">set_ylabel</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">y_title</span><span class="p">)</span>
+        <span class="n">ax</span><span class="o">.</span><span class="n">set_xlabel</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">x_title</span><span class="p">)</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">graph_title</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">ax</span><span class="o">.</span><span class="n">set_title</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">graph_title</span><span class="p">)</span>
+
+
+<div class="viewcode-block" id="blandaltman"><a class="viewcode-back" href="../../index.html#methcomp.blandaltman.blandaltman">[docs]</a><span class="k">def</span> <span class="nf">blandaltman</span><span class="p">(</span><span class="n">method1</span><span class="p">,</span> <span class="n">method2</span><span class="p">,</span>
+                <span class="n">x_label</span><span class="o">=</span><span class="s1">&#39;Mean of methods&#39;</span><span class="p">,</span> <span class="n">y_label</span><span class="o">=</span><span class="s1">&#39;Difference between methods&#39;</span><span class="p">,</span> <span class="n">title</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                <span class="n">diff</span><span class="o">=</span><span class="s1">&#39;absolute&#39;</span><span class="p">,</span> <span class="n">limit_of_agreement</span><span class="o">=</span><span class="mf">1.96</span><span class="p">,</span> <span class="n">reference</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">CI</span><span class="o">=</span><span class="mf">0.95</span><span class="p">,</span>
+                <span class="n">xlim</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">ylim</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                <span class="n">color_mean</span><span class="o">=</span><span class="s1">&#39;#008bff&#39;</span><span class="p">,</span> <span class="n">color_loa</span><span class="o">=</span><span class="s1">&#39;#FF7000&#39;</span><span class="p">,</span> <span class="n">color_points</span><span class="o">=</span><span class="s1">&#39;#000000&#39;</span><span class="p">,</span>
+                <span class="n">ax</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Provide a method comparison using Bland-Altman plotting.</span>
+
+<span class="sd">    This is an Axis-level function which will draw the Bland-Altman plot</span>
+<span class="sd">    onto the current active Axis object unless ``ax`` is provided.</span>
+
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    method1, method2 : array, or list</span>
+<span class="sd">        Values obtained from both methods, preferably provided in a np.array.</span>
+<span class="sd">    x_label : str, optional</span>
+<span class="sd">        The label which is added to the X-axis. If None is provided, a standard</span>
+<span class="sd">        label will be added.</span>
+<span class="sd">    y_label : str, optional</span>
+<span class="sd">        The label which is added to the Y-axis. If None is provided, a standard</span>
+<span class="sd">        label will be added.</span>
+<span class="sd">    title : str, optional</span>
+<span class="sd">        Title of the Bland-Altman plot. If None is provided, no title will be plotted.</span>
+<span class="sd">    diff : &quot;absolute&quot;  or &quot;percentage&quot;</span>
+<span class="sd">        The difference to display, whether it is an absolute one or a percentual one.</span>
+<span class="sd">        If None is provided, it defaults to absolute.</span>
+<span class="sd">    limit_of_agreement : float, optional</span>
+<span class="sd">        Multiples of the standard deviation to plot the limit of afgreement bounds at.</span>
+<span class="sd">        This defaults to 1.96.</span>
+<span class="sd">    reference : bool, optional</span>
+<span class="sd">        If True, a grey reference line at y=0 will be plotted in the Bland-Altman.</span>
+<span class="sd">    CI : float, optional</span>
+<span class="sd">        The confidence interval employed in the mean difference and limit of agreement</span>
+<span class="sd">        lines. Defaults to 0.95.</span>
+<span class="sd">    xlim : list, optional</span>
+<span class="sd">        Minimum and maximum limits for X-axis. Should be provided as list or tuple.</span>
+<span class="sd">        If not set, matplotlib will decide its own bounds.</span>
+<span class="sd">    ylim : list, optional</span>
+<span class="sd">        Minimum and maximum limits for Y-axis. Should be provided as list or tuple.</span>
+<span class="sd">        If not set, matplotlib will decide its own bounds.</span>
+<span class="sd">    color_mean : str, optional</span>
+<span class="sd">        Color of the mean difference line that will be plotted.</span>
+<span class="sd">    color_loa : str, optional</span>
+<span class="sd">        Color of the limit of agreement lines that will be plotted.</span>
+<span class="sd">    color_points : str, optional</span>
+<span class="sd">        Color of the individual differences that will be plotted.</span>
+<span class="sd">    ax : matplotlib Axes, optional</span>
+<span class="sd">        Axes in which to draw the plot, otherwise use the currently-active</span>
+<span class="sd">        Axes.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    ax : matplotlib Axes</span>
+<span class="sd">        Axes object with the Bland-Altman plot.</span>
+
+<span class="sd">    See Also</span>
+<span class="sd">    -------</span>
+<span class="sd">    pyCompare package on github</span>
+<span class="sd">    Altman, D. G., and Bland, J. M. Series D (The Statistician), vol. 32, no. 3, 1983, pp. 307–317.</span>
+<span class="sd">    Altman, D. G., and Bland, J. M. Statistical Methods in Medical Research, vol. 8, no. 2, 1999, pp. 135–160.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">plotter</span><span class="p">:</span> <span class="n">_BlandAltman</span> <span class="o">=</span> <span class="n">_BlandAltman</span><span class="p">(</span><span class="n">method1</span><span class="p">,</span> <span class="n">method2</span><span class="p">,</span> <span class="n">x_label</span><span class="p">,</span> <span class="n">y_label</span><span class="p">,</span> <span class="n">title</span><span class="p">,</span>
+                                         <span class="n">diff</span><span class="p">,</span> <span class="n">limit_of_agreement</span><span class="p">,</span> <span class="n">reference</span><span class="p">,</span> <span class="n">CI</span><span class="p">,</span>
+                                         <span class="n">xlim</span><span class="p">,</span> <span class="n">ylim</span><span class="p">,</span>
+                                         <span class="n">color_mean</span><span class="p">,</span> <span class="n">color_loa</span><span class="p">,</span> <span class="n">color_points</span><span class="p">)</span>
+
+    <span class="c1"># Draw the plot and return the Axes</span>
+    <span class="k">if</span> <span class="n">ax</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">ax</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">gca</span><span class="p">()</span>
+
+    <span class="n">plotter</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">ax</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">ax</span></div>
+</pre></div>
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper"><div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../../index.html">Documentation overview</a><ul>
+  <li><a href="../index.html">Module code</a><ul>
+  </ul></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="../../search.html" method="get">
+      <div><input type="text" name="q" /></div>
+      <div><input type="submit" value="Go" /></div>
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2019, William P.T.M. van Doorn.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.6.7</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.8</a>
+      
+    </div>
+
+    
+
+    
+  </body>
+</html>
