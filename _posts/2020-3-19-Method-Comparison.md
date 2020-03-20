@@ -7,7 +7,7 @@ title: Method comparison in clinical chemistry
 <img src="https://wptmdoorn.name/assets/02methcomp/methcomp1.png" height="185">
 <img src="https://wptmdoorn.name/assets/02methcomp/methcomp3.png" height="185"> 
 <img src="https://wptmdoorn.name/assets/02methcomp/methcomp4.png" height="185">
-</div> <br>
+</div>
 
 # Introduction
 Laboratory medicine is amongst the fastest growing specialities in medicine, being crucial in the diagnosis, prevention and in monitoring of
