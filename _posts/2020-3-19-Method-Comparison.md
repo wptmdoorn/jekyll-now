@@ -10,18 +10,6 @@ title: Method comparison in clinical chemistry
 </div> <br>
 
 # Introduction
-
-<div>
-<img src="https://wptmdoorn.name/assets/02methcomp/methcomp1.png" height="185">
-<img src="https://wptmdoorn.name/assets/02methcomp/methcomp3.png" height="185"> 
-<img src="https://wptmdoorn.name/assets/02methcomp/methcomp2.png" height="185">
-<img src="https://wptmdoorn.name/assets/02methcomp/methcomp4.png" height="185">
-</div> <br>
-
-![methcomp1](/assets/02methcomp/methcomp1.png)
-![methcomp1](/assets/02methcomp/methcomp2.png)
-
-
 Laboratory medicine is amongst the fastest growing specialities in medicine, being crucial in the diagnosis, prevention and in monitoring of
 disease states for individual patients, as well as for the evaluation of treatment for populations of patients [1]. High quality and safety in laboratory testing has
 therefore a crucial role in modern healthcare. Validation, comparison and verification of current and new laboratory tests is thus essential to maintain high quality and safe laboratory tests [2]. In the process of validating a laboratory test, we often employ (statistical) tools (i.e. method comparison software) to assist us making decisions about the new laboratory test. To the best of our knowledge, there is no such publicly available software tool to do this 
