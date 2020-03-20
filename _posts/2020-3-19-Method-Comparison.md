@@ -3,6 +3,13 @@ layout: post
 title: Method comparison in clinical chemistry
 ---
 
+<div>
+<img src="https://wptmdoorn.name/assets/02methcomp/methcomp1.png" height="185">
+<img src="https://wptmdoorn.name/assets/02methcomp/methcomp3.png" height="185"> 
+<img src="https://wptmdoorn.name/assets/02methcomp/methcomp2.png" height="185">
+<img src="https://wptmdoorn.name/assets/02methcomp/methcomp4.png" height="185">
+</div> <br>
+
 # Introduction
 Laboratory medicine is amongst the fastest growing specialities in medicine, being crucial in the diagnosis, prevention and in monitoring of
 disease states for individual patients, as well as for the evaluation of treatment for populations of patients [1]. High quality and safety in laboratory testing has
