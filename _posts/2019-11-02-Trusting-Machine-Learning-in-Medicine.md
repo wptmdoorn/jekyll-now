@@ -4,6 +4,10 @@ title: How do we trust Machine Learning algorithms in Medicine?
 permalink: /Uncertainty-Quantification-in-Healthcare/
 ---
 
+<p align="center">
+  <img src="/assets/01certainty/fig1.png" alt="drawing" width="80%"/> <br>
+</p>
+
 # Introduction
 Recent advancements in machine learning (ML) have cleared the path to the deployment of machine learning-based decision support systems in a wide variety of areas including medicine. A substantial number of these systems have proven to achieve superior performance compared to classical systems and/or medical specialists. Yet, most of these systems are not implemented for daily clinical care because they still lack several other important features. One of these features is the **degree of trust** a medical specialist can, or rather should, have in the prediction of an algorithm. For example, consider the situation where an algorithm predicts the day of re-admission to assist a clinical specialist in deciding if a patient can be discharged or not. Currently, most machine learning algorithms output a so-called "point" prediction (_Figure 1A_) which does not provide us with an estimate of the uncertainty concerning the prediction. Recently, numerous research groups describe "probabilistic" algorithms (_Figure 1B_) which output a probability distribution amongst the prediction, resulting in a convenient way to quantify the uncertainty.   
 <p align="center">
